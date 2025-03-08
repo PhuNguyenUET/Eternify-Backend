@@ -1,0 +1,13 @@
+Subject: Confirm Your Email for Eternify
+
+Welcome to Eternify!
+
+We're excited to have you on board. To complete your registration and start exploring the world of music, please confirm your email address by entering the following code:
+
+{EMAIL_CODE}
+
+If you didn’t create an account with Eternify, you can safely ignore this email.
+
+Stay tuned for amazing features and your favorite tunes!
+
+Happy Listening,The Eternify Team
