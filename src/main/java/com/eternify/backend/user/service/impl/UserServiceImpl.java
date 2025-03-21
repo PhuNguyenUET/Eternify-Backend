@@ -148,6 +148,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setEmailValidated(true);
+        user.setRole(Role.ARTIST.toString());
         userRepository.save(user);
     }
 
