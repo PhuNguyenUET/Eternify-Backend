@@ -13,6 +13,7 @@ import java.util.Date;
 public class UserEditDTO {
     private String firstName;
     private String lastName;
+    private String userDescription;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date dateOfBirth;

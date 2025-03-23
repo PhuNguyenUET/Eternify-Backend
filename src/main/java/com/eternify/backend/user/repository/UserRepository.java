@@ -1,4 +1,4 @@
-package com.eternify.backend.user.dto.repository;
+package com.eternify.backend.user.repository;
 
 import com.eternify.backend.user.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;

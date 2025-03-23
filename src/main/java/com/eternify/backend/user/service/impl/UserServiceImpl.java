@@ -12,12 +12,11 @@ import com.eternify.backend.user.model.Role;
 import com.eternify.backend.user.dto.UserEditDTO;
 import com.eternify.backend.user.dto.UserRegisterDTO;
 import com.eternify.backend.user.model.User;
-import com.eternify.backend.user.dto.repository.UserRepository;
+import com.eternify.backend.user.repository.UserRepository;
 import com.eternify.backend.user.service.UserService;
 import com.eternify.backend.util.RandomUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -62,7 +61,6 @@ public class UserServiceImpl implements UserService {
         user.setActive(true);
         userRepository.save(user);
     }
-
 
     @Override
     public User getUserByUsername(String username) {
@@ -167,6 +165,7 @@ public class UserServiceImpl implements UserService {
     public void editUser(UserEditDTO dto) throws ParseException {
         User user = getCurrentUser();
 
+        user.setUserDescription(dto.getUserDescription());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setDateOfBirth(dto.getDateOfBirth());

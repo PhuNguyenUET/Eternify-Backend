@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "user")
-@RequestMapping("/api/customer/v1")
+@RequestMapping("/api/user/v1")
 public class UserController {
     @Value("${api.token}")
     private String apiToken;
