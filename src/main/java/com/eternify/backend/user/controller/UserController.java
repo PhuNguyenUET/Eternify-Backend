@@ -77,6 +77,19 @@ public class UserController {
         }
     }
 
+    @GetMapping("/find_all_artists")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = User.class), mediaType = "application/json") }),
+    })
+    public ResponseEntity<ApiResponse> findAllArtists(@RequestHeader("X-auth-token") String token) {
+        try {
+            Assert.isTrue(apiToken.equals(token), "Invalid token");
+            return ResponseEntity.ok(ApiResponse.success("Get all artists success", userService.findAllArtists()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
+        }
+    }
+
     @PostMapping("/email/token")
     public ResponseEntity<ApiResponse> checkEmailToken(@RequestHeader("X-auth-token") String authToken,
                                                        @RequestBody String token) {

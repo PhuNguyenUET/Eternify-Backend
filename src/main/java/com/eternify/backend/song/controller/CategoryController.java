@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "category")
@@ -73,6 +75,16 @@ public class CategoryController {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
             return ResponseEntity.ok(ApiResponse.success("Get category by name success", categoryService.getCategoryByName(name)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
+        }
+    }
+
+    @PutMapping("/add_favourite")
+    public ResponseEntity<ApiResponse> addFavouriteCategories(@RequestBody List<String> categoryIds) {
+        try {
+            categoryService.addFavouriteCategory(categoryIds);
+            return ResponseEntity.ok(ApiResponse.success("Add favourite categories success"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }

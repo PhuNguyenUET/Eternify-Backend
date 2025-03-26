@@ -34,4 +34,6 @@ public interface UserService extends UserDetailsService {
     User getCurrentUser();
 
     void editUser(UserEditDTO dto) throws ParseException;
+
+    List<User> findAllArtists();
 }

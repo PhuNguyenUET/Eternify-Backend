@@ -35,6 +35,7 @@ public class User {
     private String lastName;
     private String userDescription;
     private String address;
+    private String coverPath;
 
     private UserPref userPref;
 

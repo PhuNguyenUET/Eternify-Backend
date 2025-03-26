@@ -29,4 +29,5 @@ public interface SongService {
     List<SongDTO> getFavorites();
 
     void songListened(String id);
+    void updateFavouriteArtistForRecommendations(List<String> artistIds);
 }

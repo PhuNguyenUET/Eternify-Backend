@@ -128,7 +128,7 @@ public class UserServiceImpl implements UserService {
     public void sendConfirmEmail() {
         User user = getCurrentUser();
         String email = user.getEmail();
-        String token = RandomUtils.generateRandomString(6);
+        String token = RandomUtils.generateRandomString(7);
         user.setConfirmEmailToken(token);
         user.setConfirmEmailTokenExpire(System.currentTimeMillis() + 30 * 60 * 1000);
         userRepository.save(user);
@@ -168,6 +168,7 @@ public class UserServiceImpl implements UserService {
         user.setUserDescription(dto.getUserDescription());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
+        user.setCoverPath(dto.getCoverPath());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setPhone(dto.getPhone());
         user.setAddress(dto.getAddress());
@@ -199,6 +200,11 @@ public class UserServiceImpl implements UserService {
         user.setResetPasswordToken(null);
         user.setResetPasswordTokenExpire(-1);
         userRepository.save(user);
+    }
+
+    @Override
+    public List<User> findAllArtists() {
+        return userRepository.findAllByRole(Role.ARTIST.toString());
     }
 
     private static String extractUserId(String token) {

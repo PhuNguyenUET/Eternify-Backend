@@ -260,6 +260,10 @@ public class SongServiceImpl implements SongService {
         recommendationsRaw.addAll(searchByCategory(topCategories.get(0)));
         recommendationsRaw.addAll(searchByCategory(topCategories.get(1)));
 
+        if(recommendationsRaw.size() < 30) {
+            recommendationsRaw.addAll(searchByCategory(categoryRepository.findByName("Pop").getId()));
+        }
+
         return recommendationsRaw.stream().limit(30).toList();
     }
 
@@ -317,5 +321,16 @@ public class SongServiceImpl implements SongService {
         currentUser.getUserPref().getCategoryFrequency().put(song.getCategoryId(), currentUser.getUserPref().getCategoryFrequency().getOrDefault(song.getCategoryId(), 0) + 1);
 
         mongoTemplate.save(currentUser);
+    }
+
+    @Override
+    public void updateFavouriteArtistForRecommendations(List<String> artistIds) {
+        for(String artistId : artistIds) {
+            List<SongDTO> artistSongs = searchByArtist(artistId);
+
+            for(SongDTO song : artistSongs) {
+                songListened(song.getId());
+            }
+        }
     }
 }

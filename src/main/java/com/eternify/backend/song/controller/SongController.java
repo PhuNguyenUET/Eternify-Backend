@@ -247,4 +247,16 @@ public class SongController {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
     }
+
+    @PutMapping("/update_favourite_artist")
+    public ResponseEntity<ApiResponse> updateFavouriteArtistForRecommendations(@RequestHeader("X-auth-token") String token,
+                                                                              @RequestBody List<String> artistIds) {
+        try {
+            Assert.isTrue(apiToken.equals(token), "Invalid token");
+            songService.updateFavouriteArtistForRecommendations(artistIds);
+            return ResponseEntity.ok(ApiResponse.success("Update favourite artist for recommendations success"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
+        }
+    }
 }

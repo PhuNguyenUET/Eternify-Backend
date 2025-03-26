@@ -406,6 +406,10 @@ public class AlbumServiceImpl implements AlbumService {
         rawRecommendations.addAll(searchByCategory(topCategories.get(0)));
         rawRecommendations.addAll(searchByCategory(topCategories.get(1)));
 
-        return rawRecommendations.stream().toList();
+        if(rawRecommendations.size() < 10) {
+            rawRecommendations.addAll(searchByCategory(categoryRepository.findByName("Pop").getId()));
+        }
+
+        return rawRecommendations.stream().limit(10).toList();
     }
 }
