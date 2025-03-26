@@ -178,10 +178,10 @@ public class AlbumController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = AlbumDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> searchByName(@RequestHeader("X-auth-token") String token,
-                                                      @RequestParam String prefix) {
+                                                      @RequestParam String prefix, @RequestParam String albumType) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Search by name success", albumService.searchByName(prefix)));
+            return ResponseEntity.ok(ApiResponse.success("Search by name success", albumService.searchByName(prefix, albumType)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -192,10 +192,10 @@ public class AlbumController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = AlbumDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> searchByArtist(@RequestHeader("X-auth-token") String token,
-                                                      @RequestParam String artistId) {
+                                                      @RequestParam String artistId, @RequestParam String albumType) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Search by artist success", albumService.searchByArtist(artistId)));
+            return ResponseEntity.ok(ApiResponse.success("Search by artist success", albumService.searchByArtist(artistId, albumType)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -206,10 +206,10 @@ public class AlbumController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = AlbumDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> searchByCategory(@RequestHeader("X-auth-token") String token,
-                                                      @RequestParam String categoryId) {
+                                                      @RequestParam String categoryId, @RequestParam String albumType) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Search by category success", albumService.searchByCategory(categoryId)));
+            return ResponseEntity.ok(ApiResponse.success("Search by category success", albumService.searchByCategory(categoryId, albumType)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -220,10 +220,10 @@ public class AlbumController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = AlbumDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> searchByTag(@RequestHeader("X-auth-token") String token,
-                                                      @RequestParam List<String> tags) {
+                                                      @RequestParam List<String> tags, @RequestParam String albumType) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Search by tag success", albumService.searchByTag(tags)));
+            return ResponseEntity.ok(ApiResponse.success("Search by tag success", albumService.searchByTag(tags, albumType)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }

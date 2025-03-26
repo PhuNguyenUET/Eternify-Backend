@@ -16,7 +16,7 @@ public class SongAddDTO {
     private String title;
     private String coverPath;
     private String persistentPathSong;
-    private Status status;
+    private String status;
 
     private String categoryId;
     private List<String> tags;

@@ -68,7 +68,7 @@ public class SongServiceImpl implements SongService {
                 .categoryId(songAddDTO.getCategoryId())
                 .tags(songAddDTO.getTags())
                 .coverPath(songAddDTO.getCoverPath())
-                .status(songAddDTO.getStatus())
+                .status(songAddDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString())
                 .build();
 
         mongoTemplate.save(song);
@@ -88,7 +88,7 @@ public class SongServiceImpl implements SongService {
 
         song.setTitle(songEditDTO.getTitle());
         song.setCoverPath(songEditDTO.getCoverPath());
-        song.setStatus(songEditDTO.getStatus());
+        song.setStatus(songEditDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString());
         song.setCategoryId(songEditDTO.getCategoryId());
         song.setTags(songEditDTO.getTags());
 
@@ -118,6 +118,10 @@ public class SongServiceImpl implements SongService {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Song doesn't exist");
         }
 
+        if(song.getStatus().equals(Status.PRIVATE.toString()) && !song.getArtistId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "You are not allowed to view this song");
+        }
+
         return modelMapper.map(song, SongDTO.class);
     }
 
@@ -133,7 +137,7 @@ public class SongServiceImpl implements SongService {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "You are not allowed to open this song");
         }
 
-        song.setStatus(Status.PUBLIC);
+        song.setStatus(Status.PUBLIC.toString());
 
         mongoTemplate.save(song);
     }
@@ -150,7 +154,7 @@ public class SongServiceImpl implements SongService {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "You are not allowed to close this song");
         }
 
-        song.setStatus(Status.PRIVATE);
+        song.setStatus(Status.PRIVATE.toString());
 
         mongoTemplate.save(song);
     }
@@ -205,6 +209,7 @@ public class SongServiceImpl implements SongService {
     public List<SongDTO> searchByName(String prefix) {
         Query query = new Query();
         query.addCriteria(Criteria.where("title").regex("^" + prefix));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
         return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
     }
@@ -213,6 +218,7 @@ public class SongServiceImpl implements SongService {
     public List<SongDTO> searchByCategory(String categoryId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("categoryId").is(categoryId));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
         return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
     }
@@ -221,6 +227,7 @@ public class SongServiceImpl implements SongService {
     public List<SongDTO> searchByArtist(String artistId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("artistId").is(artistId));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
         return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
     }
@@ -235,6 +242,7 @@ public class SongServiceImpl implements SongService {
 
         Query query = new Query();
         query.addCriteria(Criteria.where("tags").in(tagIds));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
         return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
     }
@@ -263,6 +271,8 @@ public class SongServiceImpl implements SongService {
         if(recommendationsRaw.size() < 30) {
             recommendationsRaw.addAll(searchByCategory(categoryRepository.findByName("Pop").getId()));
         }
+
+        recommendationsRaw.removeIf(songDto -> songDto.getStatus().equals(Status.PRIVATE.toString()) );
 
         return recommendationsRaw.stream().limit(30).toList();
     }
@@ -298,6 +308,8 @@ public class SongServiceImpl implements SongService {
         albumTags.add(album.getMainTag());
 
         recommendationsRaw.addAll(searchByTag(albumTags));
+
+        recommendationsRaw.removeIf(songDto -> songDto.getStatus().equals(Status.PRIVATE.toString()));
 
         return recommendationsRaw.stream().limit(30).toList();
     }

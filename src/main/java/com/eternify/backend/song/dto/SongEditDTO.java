@@ -16,7 +16,7 @@ public class SongEditDTO {
     private String id;
     private String title;
     private String coverPath;
-    private Status status;
+    private String status;
 
     private String categoryId;
     private List<String> tags;

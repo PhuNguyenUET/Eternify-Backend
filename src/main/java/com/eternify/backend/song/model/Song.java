@@ -27,7 +27,7 @@ public class Song {
     private String categoryId;
     private List<String> tags;
     private String coverPath;
-    private Status status;
+    private String status;
 
     @CreatedDate
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)

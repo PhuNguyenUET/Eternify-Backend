@@ -1,6 +1,7 @@
 package com.eternify.backend.song.service;
 
 import com.eternify.backend.song.dto.*;
+import com.eternify.backend.song.model.AlbumType;
 
 import java.util.List;
 
@@ -21,10 +22,10 @@ public interface AlbumService {
     void favoriteAlbum(String id);
     void unfavoriteAlbum(String id);
 
-    List<AlbumDTO> searchByName(String prefix);
-    List<AlbumDTO> searchByArtist(String artistId);
-    List<AlbumDTO> searchByCategory(String categoryId);
-    List<AlbumDTO> searchByTag(List<String> tags);
+    List<AlbumDTO> searchByName(String prefix, String albumType);
+    List<AlbumDTO> searchByArtist(String artistId, String albumType);
+    List<AlbumDTO> searchByCategory(String categoryId, String albumType);
+    List<AlbumDTO> searchByTag(List<String> tags, String albumType);
 
     List<AlbumDTO> getAlbumRecommendations();
 }

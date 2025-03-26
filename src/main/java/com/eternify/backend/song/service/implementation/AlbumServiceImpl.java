@@ -3,11 +3,13 @@ package com.eternify.backend.song.service.implementation;
 import com.eternify.backend.common.exception.BusinessException;
 import com.eternify.backend.song.dto.*;
 import com.eternify.backend.song.model.Album;
+import com.eternify.backend.song.model.AlbumType;
 import com.eternify.backend.song.model.Song;
 import com.eternify.backend.song.model.Status;
 import com.eternify.backend.song.repository.CategoryRepository;
 import com.eternify.backend.song.repository.TagRepository;
 import com.eternify.backend.song.service.AlbumService;
+import com.eternify.backend.user.model.Role;
 import com.eternify.backend.user.model.User;
 import com.eternify.backend.user.repository.UserRepository;
 import com.eternify.backend.util.AuthenticationUtils;
@@ -45,6 +47,7 @@ public class AlbumServiceImpl implements AlbumService {
                     .owner(userRepository.findById(album.getOwnerId()).orElse(null))
                     .coverPath(album.getCoverPath())
                     .status(album.getStatus())
+                    .albumType(album.getAlbumType())
                     .createdDate(album.getCreatedDate())
                     .modifiedDate(album.getModifiedDate())
                     .build();
@@ -81,8 +84,14 @@ public class AlbumServiceImpl implements AlbumService {
                 .description(albumAddDTO.getDescription())
                 .ownerId(AuthenticationUtils.getCurrentUser().getId())
                 .coverPath(albumAddDTO.getCoverPath())
-                .status(albumAddDTO.getStatus())
+                .status(albumAddDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString())
                 .build();
+
+        if(AuthenticationUtils.getCurrentUser().getRole().equals(Role.ARTIST.toString())) {
+            album.setAlbumType(albumAddDTO.getAlbumType().equals(AlbumType.ARTIST_ALBUM.toString()) ? AlbumType.ARTIST_ALBUM.toString() : AlbumType.PLAYLIST.toString());
+        } else {
+            album.setAlbumType(AlbumType.PLAYLIST.toString());
+        }
 
         mongoTemplate.save(album);
     }
@@ -117,7 +126,13 @@ public class AlbumServiceImpl implements AlbumService {
         album.setName(albumEditDTO.getName());
         album.setDescription(albumEditDTO.getDescription());
         album.setCoverPath(albumEditDTO.getCoverPath());
-        album.setStatus(albumEditDTO.getStatus());
+        album.setStatus(albumEditDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString());
+
+        if(AuthenticationUtils.getCurrentUser().getRole().equals(Role.ARTIST.toString())) {
+            album.setAlbumType(albumEditDTO.getAlbumType().equals(AlbumType.ARTIST_ALBUM.toString()) ? AlbumType.ARTIST_ALBUM.toString() : AlbumType.PLAYLIST.toString());
+        } else {
+            album.setAlbumType(AlbumType.PLAYLIST.toString());
+        }
 
         mongoTemplate.save(album);
     }
@@ -130,6 +145,10 @@ public class AlbumServiceImpl implements AlbumService {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
+        if(album.getStatus().equals(Status.PRIVATE.toString()) && !album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+            throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this private album");
+        }
+
         return modelMapper.map(album, AlbumDTO.class);
     }
 
@@ -139,6 +158,10 @@ public class AlbumServiceImpl implements AlbumService {
 
         if(album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
+        }
+
+        if(album.getStatus().equals(Status.PRIVATE.toString()) && !album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+            throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this private album");
         }
 
         Album cloneAlbum = Album.builder()
@@ -298,7 +321,7 @@ public class AlbumServiceImpl implements AlbumService {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
-        album.setStatus(Status.PUBLIC);
+        album.setStatus(Status.PUBLIC.toString());
 
         mongoTemplate.save(album);
     }
@@ -315,7 +338,7 @@ public class AlbumServiceImpl implements AlbumService {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
-        album.setStatus(Status.PRIVATE);
+        album.setStatus(Status.PRIVATE.toString());
 
         mongoTemplate.save(album);
     }
@@ -353,33 +376,68 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public List<AlbumDTO> searchByName(String prefix) {
+    public List<AlbumDTO> searchByName(String prefix, String albumType) {
         Query query = new Query();
         query.addCriteria(Criteria.where("name").regex("^" + prefix));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
+        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
+        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
+        } else {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
+        }
 
         return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
     }
 
     @Override
-    public List<AlbumDTO> searchByArtist(String artistId) {
+    public List<AlbumDTO> searchByArtist(String artistId, String albumType) {
         Query query = new Query();
         query.addCriteria(Criteria.where("ownerId").is(artistId));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
+
+        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
+        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
+        } else {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
+        }
 
         return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
     }
 
     @Override
-    public List<AlbumDTO> searchByCategory(String categoryId) {
+    public List<AlbumDTO> searchByCategory(String categoryId, String albumType) {
         Query query = new Query();
         query.addCriteria(Criteria.where("mainCategory").is(categoryId));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
+
+        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
+        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
+        } else {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
+        }
 
         return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
     }
 
     @Override
-    public List<AlbumDTO> searchByTag(List<String> tags) {
+    public List<AlbumDTO> searchByTag(List<String> tags, String albumType) {
         Query query = new Query();
         query.addCriteria(Criteria.where("mainTag").in(tags));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
+
+        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
+        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
+        } else {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
+        }
 
         return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
     }
@@ -402,13 +460,15 @@ public class AlbumServiceImpl implements AlbumService {
 
         Set<AlbumDTO> rawRecommendations = new HashSet<>();
 
-        rawRecommendations.addAll(searchByTag(topTags));
-        rawRecommendations.addAll(searchByCategory(topCategories.get(0)));
-        rawRecommendations.addAll(searchByCategory(topCategories.get(1)));
+        rawRecommendations.addAll(searchByTag(topTags, AlbumType.NONE.toString()));
+        rawRecommendations.addAll(searchByCategory(topCategories.get(0), AlbumType.NONE.toString()));
+        rawRecommendations.addAll(searchByCategory(topCategories.get(1), AlbumType.NONE.toString()));
 
         if(rawRecommendations.size() < 10) {
-            rawRecommendations.addAll(searchByCategory(categoryRepository.findByName("Pop").getId()));
+            rawRecommendations.addAll(searchByCategory(categoryRepository.findByName("Pop").getId(), AlbumType.NONE.toString()));
         }
+
+        rawRecommendations.removeIf(albumDTO -> albumDTO.getStatus().equals(Status.PRIVATE.toString()));
 
         return rawRecommendations.stream().limit(10).toList();
     }

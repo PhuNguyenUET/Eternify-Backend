@@ -24,7 +24,8 @@ public class AlbumDTO {
     private User owner;
     private List<SongAlbumDTO> songs;
     private String coverPath;
-    private Status status;
+    private String status;
+    private String albumType;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")

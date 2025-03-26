@@ -1,5 +1,6 @@
 package com.eternify.backend.song.dto;
 
+import com.eternify.backend.song.model.AlbumType;
 import com.eternify.backend.song.model.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,5 +15,6 @@ public class AlbumAddDTO {
     private String name;
     private String description;
     private String coverPath;
-    private Status status;
+    private String status;
+    private String albumType;
 }

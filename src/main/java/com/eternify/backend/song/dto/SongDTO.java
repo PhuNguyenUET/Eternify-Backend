@@ -28,7 +28,7 @@ public class SongDTO {
 
     private String coverPath;
 
-    private Status status;
+    private String status;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")

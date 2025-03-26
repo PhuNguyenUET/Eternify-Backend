@@ -26,7 +26,7 @@ public class SongAlbumDTO {
 
     private String coverPath;
 
-    private Status status;
+    private String status;
 
     private Date additionTime;
 }

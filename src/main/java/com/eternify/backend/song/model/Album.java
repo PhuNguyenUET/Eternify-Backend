@@ -29,7 +29,8 @@ public class Album {
     private List<String> songs;
     private Map<String, Date> songAdditionTime;
     private String coverPath;
-    private Status status;
+    private String albumType;
+    private String status;
 
     private Map<String, Integer> categoryFrequency;
     private Map<String, Integer> tagFrequency;
