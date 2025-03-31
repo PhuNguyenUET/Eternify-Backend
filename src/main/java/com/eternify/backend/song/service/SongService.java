@@ -18,15 +18,16 @@ public interface SongService {
     void favoriteSong(String id);
     void unfavoriteSong(String id);
 
-    List<SongDTO> searchByName(String prefix);
-    List<SongDTO> searchByArtist(String artistId);
-    List<SongDTO> searchByCategory(String categoryId);
-    List<SongDTO> searchByTag(List<String> tags);
+    List<SongDTO> searchByName(String prefix, int limit);
+    List<SongDTO> searchByArtist(String artistId, int limit);
+    List<SongDTO> searchByCategory(String categoryId, int limit);
+    List<SongDTO> searchByCountry(String countryId, int limit);
+    List<SongDTO> searchByTag(List<String> tags, int limit);
 
-    List<SongDTO> getUserRecommendations();
-    List<SongDTO> getAlbumRecommendations(String albumId);
-    List<SongDTO> getUserHistory();
-    List<SongDTO> getFavorites();
+    List<SongDTO> getUserRecommendations(int limit);
+    List<SongDTO> getAlbumRecommendations(String albumId, int limit);
+    List<SongDTO> getUserHistory(int limit);
+    List<SongDTO> getFavorites(int limit);
 
     void songListened(String id);
     void updateFavouriteArtistForRecommendations(List<String> artistIds);

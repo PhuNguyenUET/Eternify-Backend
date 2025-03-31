@@ -22,10 +22,11 @@ public interface AlbumService {
     void favoriteAlbum(String id);
     void unfavoriteAlbum(String id);
 
-    List<AlbumDTO> searchByName(String prefix, String albumType);
-    List<AlbumDTO> searchByArtist(String artistId, String albumType);
-    List<AlbumDTO> searchByCategory(String categoryId, String albumType);
-    List<AlbumDTO> searchByTag(List<String> tags, String albumType);
+    List<AlbumDTO> searchByName(String prefix, String albumType, int limit);
+    List<AlbumDTO> searchByArtist(String artistId, String albumType, int limit);
+    List<AlbumDTO> searchByCategory(String categoryId, String albumType, int limit);
+    List<AlbumDTO> searchByCountry(String countryId, String albumType, int limit);
+    List<AlbumDTO> searchByTag(List<String> tags, String albumType, int limit);
 
-    List<AlbumDTO> getAlbumRecommendations();
+    List<AlbumDTO> getAlbumRecommendations(int limit);
 }

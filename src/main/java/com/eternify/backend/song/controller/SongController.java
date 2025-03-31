@@ -132,10 +132,11 @@ public class SongController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> searchSongByName(@RequestHeader("X-auth-token") String token,
-                                                        @RequestParam String name) {
+                                                        @RequestParam String name,
+                                                        @RequestParam(defaultValue = "0") int limit) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Search song by name success", songService.searchByName(name)));
+            return ResponseEntity.ok(ApiResponse.success("Search song by name success", songService.searchByName(name, limit)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -146,10 +147,11 @@ public class SongController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> searchSongByArtist(@RequestHeader("X-auth-token") String token,
-                                                          @RequestParam String artist) {
+                                                          @RequestParam String artist,
+                                                          @RequestParam(defaultValue = "0") int limit) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Search song by artist success", songService.searchByArtist(artist)));
+            return ResponseEntity.ok(ApiResponse.success("Search song by artist success", songService.searchByArtist(artist, limit)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -160,10 +162,26 @@ public class SongController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> searchSongByCategory(@RequestHeader("X-auth-token") String token,
-                                                            @RequestParam String category) {
+                                                            @RequestParam String category,
+                                                            @RequestParam(defaultValue = "0") int limit) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Search song by category success", songService.searchByCategory(category)));
+            return ResponseEntity.ok(ApiResponse.success("Search song by category success", songService.searchByCategory(category, limit)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/search_by_country")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
+    })
+    public ResponseEntity<ApiResponse> searchSongByCountry(@RequestHeader("X-auth-token") String token,
+                                                           @RequestParam String country,
+                                                           @RequestParam(defaultValue = "0") int limit) {
+        try {
+            Assert.isTrue(apiToken.equals(token), "Invalid token");
+            return ResponseEntity.ok(ApiResponse.success("Search song by country success", songService.searchByCountry(country, limit)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -174,10 +192,11 @@ public class SongController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> searchSongByTag(@RequestHeader("X-auth-token") String token,
-                                                       @RequestParam List<String> tags) {
+                                                       @RequestParam List<String> tags,
+                                                       @RequestParam(defaultValue = "0") int limit) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Search song by tag success", songService.searchByTag(tags)));
+            return ResponseEntity.ok(ApiResponse.success("Search song by tag success", songService.searchByTag(tags, limit)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -187,10 +206,11 @@ public class SongController {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
     })
-    public ResponseEntity<ApiResponse> getUserRecommendations(@RequestHeader("X-auth-token") String token) {
+    public ResponseEntity<ApiResponse> getUserRecommendations(@RequestHeader("X-auth-token") String token,
+                                                              @RequestParam(defaultValue = "0") int limit) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Get user recommendations success", songService.getUserRecommendations()));
+            return ResponseEntity.ok(ApiResponse.success("Get user recommendations success", songService.getUserRecommendations(limit)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -201,10 +221,11 @@ public class SongController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
     })
     public ResponseEntity<ApiResponse> getAlbumRecommendations(@RequestHeader("X-auth-token") String token,
-                                                               @RequestParam String albumId) {
+                                                               @RequestParam String albumId,
+                                                               @RequestParam(defaultValue = "0") int limit) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Get album recommendations success", songService.getAlbumRecommendations(albumId)));
+            return ResponseEntity.ok(ApiResponse.success("Get album recommendations success", songService.getAlbumRecommendations(albumId, limit)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -214,10 +235,11 @@ public class SongController {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
     })
-    public ResponseEntity<ApiResponse> getUserHistory(@RequestHeader("X-auth-token") String token) {
+    public ResponseEntity<ApiResponse> getUserHistory(@RequestHeader("X-auth-token") String token,
+                                                      @RequestParam(defaultValue = "0") int limit) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Get user history success", songService.getUserHistory()));
+            return ResponseEntity.ok(ApiResponse.success("Get user history success", songService.getUserHistory(limit)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
@@ -227,10 +249,11 @@ public class SongController {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = SongDTO.class), mediaType = "application/json") }),
     })
-    public ResponseEntity<ApiResponse> getUserFavorites(@RequestHeader("X-auth-token") String token) {
+    public ResponseEntity<ApiResponse> getUserFavorites(@RequestHeader("X-auth-token") String token,
+                                                        @RequestParam(defaultValue = "0") int limit) {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
-            return ResponseEntity.ok(ApiResponse.success("Get user favorites success", songService.getFavorites()));
+            return ResponseEntity.ok(ApiResponse.success("Get user favorites success", songService.getFavorites(limit)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }

@@ -1,6 +1,5 @@
 package com.eternify.backend.song.model;
 
-import com.eternify.backend.user.model.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -28,14 +27,16 @@ public class Album {
     private String ownerId;
     private List<String> songs;
     private Map<String, Date> songAdditionTime;
-    private String coverPath;
+    private String persistentCoverId;
     private String albumType;
     private String status;
 
     private Map<String, Integer> categoryFrequency;
+    private Map<String, Integer> countryFrequency;
     private Map<String, Integer> tagFrequency;
 
     private String mainCategory = "";
+    private String mainCountry = "";
     private String mainTag = "";
 
     @CreatedDate

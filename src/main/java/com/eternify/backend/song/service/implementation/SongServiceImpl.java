@@ -8,6 +8,7 @@ import com.eternify.backend.song.model.Album;
 import com.eternify.backend.song.model.Song;
 import com.eternify.backend.song.model.Status;
 import com.eternify.backend.song.repository.CategoryRepository;
+import com.eternify.backend.song.repository.CountryRepository;
 import com.eternify.backend.song.repository.TagRepository;
 import com.eternify.backend.song.service.SongService;
 import com.eternify.backend.user.repository.UserRepository;
@@ -32,6 +33,7 @@ public class SongServiceImpl implements SongService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final CategoryRepository categoryRepository;
+    private final CountryRepository countryRepository;
     private ModelMapper modelMapper;
 
     @PostConstruct
@@ -46,8 +48,11 @@ public class SongServiceImpl implements SongService {
                            .id(source.getId())
                            .title(source.getTitle())
                            .artist(userRepository.findById(source.getArtistId()).orElse(null))
+                           .persistentSongId(source.getPersistentSongId())
+                           .category(categoryRepository.findById(source.getCategoryId()).orElse(null))
+                           .country(countryRepository.findById(source.getCountryId()).orElse(null))
                            .tags(source.getTags().stream().map(tagId -> tagRepository.findById(tagId).orElse(null)).toList())
-                           .coverPath(source.getCoverPath())
+                           .persistentCoverId(source.getPersistentCoverId())
                            .status(source.getStatus())
                            .createdDate(source.getCreatedDate())
                            .modifiedDate(source.getModifiedDate())
@@ -64,10 +69,11 @@ public class SongServiceImpl implements SongService {
         Song song = Song.builder()
                 .title(songAddDTO.getTitle())
                 .artistId(AuthenticationUtils.getCurrentUser().getId())
-                .persistentPathSong(songAddDTO.getPersistentPathSong())
+                .persistentSongId(songAddDTO.getPersistentSongId())
                 .categoryId(songAddDTO.getCategoryId())
+                .countryId(songAddDTO.getCountryId())
                 .tags(songAddDTO.getTags())
-                .coverPath(songAddDTO.getCoverPath())
+                .persistentCoverId(songAddDTO.getPersistentCoverId())
                 .status(songAddDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString())
                 .build();
 
@@ -87,9 +93,10 @@ public class SongServiceImpl implements SongService {
         }
 
         song.setTitle(songEditDTO.getTitle());
-        song.setCoverPath(songEditDTO.getCoverPath());
+        song.setPersistentCoverId(songEditDTO.getPersistentCoverId());
         song.setStatus(songEditDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString());
         song.setCategoryId(songEditDTO.getCategoryId());
+        song.setCountryId(songEditDTO.getCountryId());
         song.setTags(songEditDTO.getTags());
 
         mongoTemplate.save(song);
@@ -176,6 +183,7 @@ public class SongServiceImpl implements SongService {
         }
 
         currentUser.getUserPref().getCategoryFrequency().put(song.getCategoryId(), currentUser.getUserPref().getCategoryFrequency().getOrDefault(song.getCategoryId(), 0) + 10);
+        currentUser.getUserPref().getCountryFrequency().put(song.getCountryId(), currentUser.getUserPref().getCountryFrequency().getOrDefault(song.getCountryId(), 0) + 10);
 
         mongoTemplate.save(AuthenticationUtils.getCurrentUser());
     }
@@ -201,39 +209,65 @@ public class SongServiceImpl implements SongService {
         }
 
         currentUser.getUserPref().getCategoryFrequency().put(song.getCategoryId(), currentUser.getUserPref().getCategoryFrequency().getOrDefault(song.getCategoryId(), 0) - 10);
+        currentUser.getUserPref().getCountryFrequency().put(song.getCountryId(), currentUser.getUserPref().getCountryFrequency().getOrDefault(song.getCountryId(), 0) - 10);
 
         mongoTemplate.save(AuthenticationUtils.getCurrentUser());
     }
 
     @Override
-    public List<SongDTO> searchByName(String prefix) {
+    public List<SongDTO> searchByName(String prefix, int limit) {
         Query query = new Query();
         query.addCriteria(Criteria.where("title").regex("^" + prefix));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
-        return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Song.class).stream().limit(limit).map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<SongDTO> searchByCategory(String categoryId) {
+    public List<SongDTO> searchByCategory(String categoryId, int limit) {
         Query query = new Query();
         query.addCriteria(Criteria.where("categoryId").is(categoryId));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
-        return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Song.class).stream().limit(limit).map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<SongDTO> searchByArtist(String artistId) {
+    public List<SongDTO> searchByCountry(String countryId, int limit) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("countryId").is(countryId));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
+
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Song.class).stream().limit(limit).map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        }
+    }
+
+    @Override
+    public List<SongDTO> searchByArtist(String artistId, int limit) {
         Query query = new Query();
         query.addCriteria(Criteria.where("artistId").is(artistId));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
-        return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Song.class).stream().limit(limit).map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<SongDTO> searchByTag(List<String> tagNames) {
+    public List<SongDTO> searchByTag(List<String> tagNames, int limit) {
         List<String> tagIds = tagNames.stream().map(tagName -> tagRepository.findByName(tagName).getId()).toList();
 
         if(tagIds.isEmpty()) {
@@ -244,11 +278,15 @@ public class SongServiceImpl implements SongService {
         query.addCriteria(Criteria.where("tags").in(tagIds));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
-        return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Song.class).stream().map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Song.class).stream().limit(limit).map(song -> modelMapper.map(song, SongDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<SongDTO> getUserRecommendations() {
+    public List<SongDTO> getUserRecommendations(int limit) {
         User currentUser = AuthenticationUtils.getCurrentUser();
 
         List<String> topTags = currentUser.getUserPref().getTagFrequency().entrySet().stream()
@@ -257,7 +295,7 @@ public class SongServiceImpl implements SongService {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        Set<SongDTO> recommendationsRaw = new HashSet<>(searchByTag(topTags));
+        Set<SongDTO> recommendationsRaw = new HashSet<>(searchByTag(topTags, 0));
 
         List<String> topCategories = currentUser.getUserPref().getCategoryFrequency().entrySet().stream()
                 .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
@@ -265,53 +303,80 @@ public class SongServiceImpl implements SongService {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        recommendationsRaw.addAll(searchByCategory(topCategories.get(0)));
-        recommendationsRaw.addAll(searchByCategory(topCategories.get(1)));
+        recommendationsRaw.addAll(searchByCategory(topCategories.get(0), 0));
+        recommendationsRaw.addAll(searchByCategory(topCategories.get(1), 0));
+
+        List<String> topCountries = currentUser.getUserPref().getCountryFrequency().entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .limit(2)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        recommendationsRaw.addAll(searchByCountry(topCountries.get(0), 0));
+        recommendationsRaw.addAll(searchByCountry(topCountries.get(1), 0));
 
         if(recommendationsRaw.size() < 30) {
-            recommendationsRaw.addAll(searchByCategory(categoryRepository.findByName("Pop").getId()));
+            recommendationsRaw.addAll(searchByCategory(categoryRepository.findByName("Pop").getId(), 0));
         }
 
         recommendationsRaw.removeIf(songDto -> songDto.getStatus().equals(Status.PRIVATE.toString()) );
 
-        return recommendationsRaw.stream().limit(30).toList();
+        if(limit <= 0) {
+            return recommendationsRaw.stream().toList();
+        } else {
+            return recommendationsRaw.stream().limit(limit).toList();
+        }
     }
 
     @Override
-    public List<SongDTO> getUserHistory() {
+    public List<SongDTO> getUserHistory(int limit) {
         User currentUser = AuthenticationUtils.getCurrentUser();
 
         List<String> songIds = new ArrayList<>(currentUser.getUserPref().getSongHistory());
         Collections.shuffle(songIds);
 
-        return songIds.stream().limit(30).map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
+        if(limit <= 0) {
+            return songIds.stream().map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
+        } else {
+            return songIds.stream().limit(limit).map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<SongDTO> getFavorites() {
+    public List<SongDTO> getFavorites(int limit) {
         User currentUser = AuthenticationUtils.getCurrentUser();
 
-        return currentUser.getUserPref().getFavoriteSongs().stream().map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
+        if(limit <= 0) {
+            return currentUser.getUserPref().getFavoriteSongs().stream().map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
+        } else {
+            return currentUser.getUserPref().getFavoriteSongs().stream().limit(limit).map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<SongDTO> getAlbumRecommendations(String albumId) {
+    public List<SongDTO> getAlbumRecommendations(String albumId, int limit) {
         Album album = mongoTemplate.findById(albumId, Album.class);
 
         if(album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        Set<SongDTO> recommendationsRaw = new HashSet<>(searchByCategory(album.getMainCategory()));
+        Set<SongDTO> recommendationsRaw = new HashSet<>(searchByCategory(album.getMainCategory(), 0));
 
         List<String> albumTags = new ArrayList<>();
         albumTags.add(album.getMainTag());
 
-        recommendationsRaw.addAll(searchByTag(albumTags));
+        recommendationsRaw.addAll(searchByTag(albumTags, 0));
+
+        recommendationsRaw.addAll(searchByCountry(album.getMainCountry(), 0));
 
         recommendationsRaw.removeIf(songDto -> songDto.getStatus().equals(Status.PRIVATE.toString()));
 
-        return recommendationsRaw.stream().limit(30).toList();
+        if(limit <= 0) {
+            return recommendationsRaw.stream().toList();
+        } else {
+            return recommendationsRaw.stream().limit(limit).toList();
+        }
     }
 
     @Override
@@ -331,6 +396,7 @@ public class SongServiceImpl implements SongService {
         }
 
         currentUser.getUserPref().getCategoryFrequency().put(song.getCategoryId(), currentUser.getUserPref().getCategoryFrequency().getOrDefault(song.getCategoryId(), 0) + 1);
+        currentUser.getUserPref().getCountryFrequency().put(song.getCountryId(), currentUser.getUserPref().getCountryFrequency().getOrDefault(song.getCountryId(), 0) + 1);
 
         mongoTemplate.save(currentUser);
     }
@@ -338,7 +404,7 @@ public class SongServiceImpl implements SongService {
     @Override
     public void updateFavouriteArtistForRecommendations(List<String> artistIds) {
         for(String artistId : artistIds) {
-            List<SongDTO> artistSongs = searchByArtist(artistId);
+            List<SongDTO> artistSongs = searchByArtist(artistId, 0);
 
             for(SongDTO song : artistSongs) {
                 songListened(song.getId());

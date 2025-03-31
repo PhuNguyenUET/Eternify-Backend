@@ -1,6 +1,5 @@
 package com.eternify.backend.song.dto;
 
-import com.eternify.backend.song.model.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,9 +14,10 @@ import java.util.List;
 public class SongEditDTO {
     private String id;
     private String title;
-    private String coverPath;
+    private String persistentCoverId;
     private String status;
 
     private String categoryId;
+    private String countryId;
     private List<String> tags;
 }

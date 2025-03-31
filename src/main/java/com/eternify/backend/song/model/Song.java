@@ -23,10 +23,11 @@ public class Song {
 
     private String title;
     private String artistId;
-    private String persistentPathSong;
+    private String persistentSongId;
     private String categoryId;
+    private String countryId;
     private List<String> tags;
-    private String coverPath;
+    private String persistentCoverId;
     private String status;
 
     @CreatedDate

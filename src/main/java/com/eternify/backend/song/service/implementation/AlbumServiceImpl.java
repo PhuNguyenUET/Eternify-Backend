@@ -7,6 +7,7 @@ import com.eternify.backend.song.model.AlbumType;
 import com.eternify.backend.song.model.Song;
 import com.eternify.backend.song.model.Status;
 import com.eternify.backend.song.repository.CategoryRepository;
+import com.eternify.backend.song.repository.CountryRepository;
 import com.eternify.backend.song.repository.TagRepository;
 import com.eternify.backend.song.service.AlbumService;
 import com.eternify.backend.user.model.Role;
@@ -31,6 +32,7 @@ public class AlbumServiceImpl implements AlbumService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final CategoryRepository categoryRepository;
+    private final CountryRepository countryRepository;
     private ModelMapper modelMapper;
 
     @PostConstruct
@@ -45,7 +47,7 @@ public class AlbumServiceImpl implements AlbumService {
                     .name(album.getName())
                     .description(album.getDescription())
                     .owner(userRepository.findById(album.getOwnerId()).orElse(null))
-                    .coverPath(album.getCoverPath())
+                    .persistentCoverId(album.getPersistentCoverId())
                     .status(album.getStatus())
                     .albumType(album.getAlbumType())
                     .createdDate(album.getCreatedDate())
@@ -63,10 +65,11 @@ public class AlbumServiceImpl implements AlbumService {
                         .id(song.getId())
                         .title(song.getTitle())
                         .artist(userRepository.findById(song.getArtistId()).orElse(null))
-                        .persistentPathSong(song.getPersistentPathSong())
+                        .persistentSongId(song.getPersistentSongId())
                         .category(categoryRepository.findById(song.getCategoryId()).orElse(null))
+                        .country(countryRepository.findById(song.getCountryId()).orElse(null))
                         .tags(song.getTags().stream().map(tagId -> tagRepository.findById(tagId).orElse(null)).toList())
-                        .coverPath(song.getCoverPath())
+                        .persistentCoverId(song.getPersistentCoverId())
                         .status(song.getStatus())
                         .additionTime(album.getSongAdditionTime().getOrDefault(song.getId(), null))
                         .build();
@@ -83,7 +86,7 @@ public class AlbumServiceImpl implements AlbumService {
                 .name(albumAddDTO.getName())
                 .description(albumAddDTO.getDescription())
                 .ownerId(AuthenticationUtils.getCurrentUser().getId())
-                .coverPath(albumAddDTO.getCoverPath())
+                .persistentCoverId(albumAddDTO.getPersistentCoverId())
                 .status(albumAddDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString())
                 .build();
 
@@ -125,7 +128,7 @@ public class AlbumServiceImpl implements AlbumService {
 
         album.setName(albumEditDTO.getName());
         album.setDescription(albumEditDTO.getDescription());
-        album.setCoverPath(albumEditDTO.getCoverPath());
+        album.setPersistentCoverId(albumEditDTO.getPersistentCoverId());
         album.setStatus(albumEditDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString());
 
         if(AuthenticationUtils.getCurrentUser().getRole().equals(Role.ARTIST.toString())) {
@@ -168,14 +171,17 @@ public class AlbumServiceImpl implements AlbumService {
                 .name(album.getName())
                 .description(album.getDescription())
                 .ownerId(AuthenticationUtils.getCurrentUser().getId())
-                .coverPath(album.getCoverPath())
+                .persistentCoverId(album.getPersistentCoverId())
                 .status(album.getStatus())
                 .songs(album.getSongs())
+                .albumType(AlbumType.PLAYLIST.toString())
                 .songAdditionTime(album.getSongAdditionTime())
                 .categoryFrequency(album.getCategoryFrequency())
                 .tagFrequency(album.getTagFrequency())
+                .countryFrequency(album.getCountryFrequency())
                 .mainCategory(album.getMainCategory())
                 .mainTag(album.getMainTag())
+                .mainCountry(album.getMainCountry())
                 .build();
 
         mongoTemplate.save(cloneAlbum);
@@ -209,6 +215,12 @@ public class AlbumServiceImpl implements AlbumService {
 
         if(album.getCategoryFrequency().get(song.getCategoryId()) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
             album.setMainCategory(song.getCategoryId());
+        }
+
+        album.getCountryFrequency().put(song.getCountryId(), album.getCountryFrequency().getOrDefault(song.getCountryId(), 0) + 1);
+
+        if(album.getCountryFrequency().get(song.getCountryId()) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
+            album.setMainCountry(song.getCountryId());
         }
 
         for(String tagId : song.getTags()) {
@@ -258,6 +270,22 @@ public class AlbumServiceImpl implements AlbumService {
             for(String categoryId : album.getCategoryFrequency().keySet()) {
                 if(album.getCategoryFrequency().get(categoryId) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
                     album.setMainCategory(categoryId);
+                }
+            }
+        }
+
+        album.getCountryFrequency().put(song.getCountryId(), album.getCountryFrequency().get(song.getCountryId()) - 1);
+
+        if(album.getCountryFrequency().get(song.getCountryId()) == 0) {
+            album.getCountryFrequency().remove(song.getCountryId());
+        }
+
+        if(song.getCountryId().equals(album.getMainCountry())) {
+            album.setMainCountry("");
+
+            for(String countryId : album.getCountryFrequency().keySet()) {
+                if(album.getCountryFrequency().get(countryId) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
+                    album.setMainCountry(countryId);
                 }
             }
         }
@@ -376,7 +404,7 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public List<AlbumDTO> searchByName(String prefix, String albumType) {
+    public List<AlbumDTO> searchByName(String prefix, String albumType, int limit) {
         Query query = new Query();
         query.addCriteria(Criteria.where("name").regex("^" + prefix));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
@@ -388,11 +416,15 @@ public class AlbumServiceImpl implements AlbumService {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<AlbumDTO> searchByArtist(String artistId, String albumType) {
+    public List<AlbumDTO> searchByArtist(String artistId, String albumType, int limit) {
         Query query = new Query();
         query.addCriteria(Criteria.where("ownerId").is(artistId));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
@@ -405,11 +437,15 @@ public class AlbumServiceImpl implements AlbumService {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<AlbumDTO> searchByCategory(String categoryId, String albumType) {
+    public List<AlbumDTO> searchByCategory(String categoryId, String albumType, int limit) {
         Query query = new Query();
         query.addCriteria(Criteria.where("mainCategory").is(categoryId));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
@@ -422,11 +458,36 @@ public class AlbumServiceImpl implements AlbumService {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<AlbumDTO> searchByTag(List<String> tags, String albumType) {
+    public List<AlbumDTO> searchByCountry(String countryId, String albumType, int limit) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("mainCountry").is(countryId));
+        query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
+
+        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
+        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
+        } else {
+            query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
+        }
+
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        }
+    }
+
+    @Override
+    public List<AlbumDTO> searchByTag(List<String> tags, String albumType, int limit) {
         Query query = new Query();
         query.addCriteria(Criteria.where("mainTag").in(tags));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
@@ -439,11 +500,15 @@ public class AlbumServiceImpl implements AlbumService {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        if(limit <= 0) {
+            return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        } else {
+            return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
+        }
     }
 
     @Override
-    public List<AlbumDTO> getAlbumRecommendations() {
+    public List<AlbumDTO> getAlbumRecommendations(int limit) {
         User currentUser = AuthenticationUtils.getCurrentUser();
 
         List<String> topTags = currentUser.getUserPref().getTagFrequency().entrySet().stream()
@@ -458,18 +523,30 @@ public class AlbumServiceImpl implements AlbumService {
                 .map(Map.Entry::getKey)
                 .toList();
 
+        List<String> topCountries = currentUser.getUserPref().getCountryFrequency().entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .limit(2)
+                .map(Map.Entry::getKey)
+                .toList();
+
         Set<AlbumDTO> rawRecommendations = new HashSet<>();
 
-        rawRecommendations.addAll(searchByTag(topTags, AlbumType.NONE.toString()));
-        rawRecommendations.addAll(searchByCategory(topCategories.get(0), AlbumType.NONE.toString()));
-        rawRecommendations.addAll(searchByCategory(topCategories.get(1), AlbumType.NONE.toString()));
+        rawRecommendations.addAll(searchByTag(topTags, AlbumType.NONE.toString(), 0));
+        rawRecommendations.addAll(searchByCategory(topCategories.get(0), AlbumType.NONE.toString(), 0));
+        rawRecommendations.addAll(searchByCategory(topCategories.get(1), AlbumType.NONE.toString(), 0));
+        rawRecommendations.addAll(searchByCountry(topCountries.get(0), AlbumType.NONE.toString(), 0));
+        rawRecommendations.addAll(searchByCountry(topCountries.get(1), AlbumType.NONE.toString(), 0));
 
         if(rawRecommendations.size() < 10) {
-            rawRecommendations.addAll(searchByCategory(categoryRepository.findByName("Pop").getId(), AlbumType.NONE.toString()));
+            rawRecommendations.addAll(searchByCategory(categoryRepository.findByName("Pop").getId(), AlbumType.NONE.toString(), 0));
         }
 
         rawRecommendations.removeIf(albumDTO -> albumDTO.getStatus().equals(Status.PRIVATE.toString()));
 
-        return rawRecommendations.stream().limit(10).toList();
+        if(limit <= 0) {
+            return rawRecommendations.stream().toList();
+        } else {
+            return rawRecommendations.stream().limit(limit).toList();
+        }
     }
 }

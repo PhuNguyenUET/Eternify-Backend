@@ -1,7 +1,6 @@
 package com.eternify.backend.user.model;
 
 
-import com.eternify.backend.song.model.Tag;
 import com.eternify.backend.song.model.UserPref;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,9 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Setter
 @Getter
@@ -33,6 +29,7 @@ public class User {
     private boolean active;
     private String firstName;
     private String lastName;
+    private String persistentAvatarId;
     private String userDescription;
     private String address;
     private String coverPath;

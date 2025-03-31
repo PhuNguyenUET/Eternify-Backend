@@ -172,6 +172,7 @@ public class UserServiceImpl implements UserService {
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setPhone(dto.getPhone());
         user.setAddress(dto.getAddress());
+        user.setPersistentAvatarId(dto.getPersistentAvatarId());
 
         userRepository.save(user);
     }

@@ -16,6 +16,7 @@ import java.util.Map;
 public class UserPref {
     private Map<String, Integer> tagFrequency = new HashMap<>();
     private Map<String, Integer> categoryFrequency = new HashMap<>();
+    private Map<String, Integer> countryFrequency = new HashMap<>();
 
     private List<String> songHistory;
     private List<String> favoriteSongs;
