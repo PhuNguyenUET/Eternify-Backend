@@ -16,6 +16,7 @@ public class SongEditDTO {
     private String title;
     private String persistentCoverId;
     private String status;
+    private int length;
 
     private String categoryId;
     private String countryId;

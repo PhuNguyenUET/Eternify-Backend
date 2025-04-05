@@ -53,6 +53,7 @@ public class SongServiceImpl implements SongService {
                            .country(countryRepository.findById(source.getCountryId()).orElse(null))
                            .tags(source.getTags().stream().map(tagId -> tagRepository.findById(tagId).orElse(null)).toList())
                            .persistentCoverId(source.getPersistentCoverId())
+                           .length(source.getLength())
                            .status(source.getStatus())
                            .createdDate(source.getCreatedDate())
                            .modifiedDate(source.getModifiedDate())
@@ -73,6 +74,7 @@ public class SongServiceImpl implements SongService {
                 .categoryId(songAddDTO.getCategoryId())
                 .countryId(songAddDTO.getCountryId())
                 .tags(songAddDTO.getTags())
+                .length(songAddDTO.getLength())
                 .persistentCoverId(songAddDTO.getPersistentCoverId())
                 .status(songAddDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString())
                 .build();
@@ -96,6 +98,7 @@ public class SongServiceImpl implements SongService {
         song.setPersistentCoverId(songEditDTO.getPersistentCoverId());
         song.setStatus(songEditDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString());
         song.setCategoryId(songEditDTO.getCategoryId());
+        song.setLength(songEditDTO.getLength());
         song.setCountryId(songEditDTO.getCountryId());
         song.setTags(songEditDTO.getTags());
 

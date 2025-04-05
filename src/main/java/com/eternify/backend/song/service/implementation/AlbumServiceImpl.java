@@ -68,6 +68,7 @@ public class AlbumServiceImpl implements AlbumService {
                         .persistentSongId(song.getPersistentSongId())
                         .category(categoryRepository.findById(song.getCategoryId()).orElse(null))
                         .country(countryRepository.findById(song.getCountryId()).orElse(null))
+                        .length(song.getLength())
                         .tags(song.getTags().stream().map(tagId -> tagRepository.findById(tagId).orElse(null)).toList())
                         .persistentCoverId(song.getPersistentCoverId())
                         .status(song.getStatus())

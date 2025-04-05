@@ -16,6 +16,7 @@ public class SongAddDTO {
     private String persistentCoverId;
     private String persistentSongId;
     private String status;
+    private int length;
 
     private String categoryId;
     private String countryId;

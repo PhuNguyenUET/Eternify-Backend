@@ -26,6 +26,7 @@ public class Song {
     private String persistentSongId;
     private String categoryId;
     private String countryId;
+    private int length;
     private List<String> tags;
     private String persistentCoverId;
     private String status;

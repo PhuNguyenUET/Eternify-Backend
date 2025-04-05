@@ -20,6 +20,7 @@ public class SongAlbumDTO {
     private String title;
     private User artist;
     private String persistentSongId;
+    private int length;
 
     private Category category;
     private Country country;
