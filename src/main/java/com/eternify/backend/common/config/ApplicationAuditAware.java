@@ -22,6 +22,6 @@ public class ApplicationAuditAware implements AuditorAware<String> {
             return Optional.empty();
         }
 
-        return Optional.of(((CustomUserDetails) authentication.getPrincipal()).getUser().getUsername());
+        return Optional.of(((CustomUserDetails) authentication.getPrincipal()).getUser().getEmail());
     }
 }

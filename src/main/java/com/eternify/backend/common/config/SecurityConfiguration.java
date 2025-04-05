@@ -61,7 +61,7 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/**/authenticate", "/api/**/refresh_jwt", "/api/**/forgot_password", "/api/**/create_new_password", "/api/**/register", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+                        .requestMatchers("/api/**/authenticate", "/api/**/refresh_jwt", "/api/**/forgot_password", "/api/**/create_new_password", "/api/**/register", "/api/**/artist_register", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
                         .permitAll()
                         .requestMatchers(HttpMethod.OPTIONS)
                         .permitAll()

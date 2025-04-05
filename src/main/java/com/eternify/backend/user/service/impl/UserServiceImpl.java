@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return new CustomUserDetails(user, true, true, true, true);
     }
 
@@ -49,12 +49,10 @@ public class UserServiceImpl implements UserService {
     public void register(UserRegisterDTO dto) {
         String password = dto.getPassword();
         String email = dto.getEmail();
-        String username = dto.getUsername();
-        userRepository.findByUsername(dto.getUsername()).ifPresent(user -> {
+        userRepository.findByEmail(dto.getEmail()).ifPresent(user -> {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "User already existed");
         });
         User user = new User();
-        user.setUsername(username);
         user.setRole(Role.USER.toString());
         user.setEmail(email);
         user.setPassword(bCryptPasswordEncoder.encode(password));
@@ -63,8 +61,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+    public void artistRegister(UserRegisterDTO dto) {
+        String password = dto.getPassword();
+        String email = dto.getEmail();
+        userRepository.findByEmail(dto.getEmail()).ifPresent(user -> {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "User already existed");
+        });
+        User user = new User();
+        user.setRole(Role.ARTIST.toString());
+        user.setEmail(email);
+        user.setPassword(bCryptPasswordEncoder.encode(password));
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     static final String RESET_PASSWORD_SUBJECT = "Eternify - Reset Password";
@@ -168,7 +181,6 @@ public class UserServiceImpl implements UserService {
         user.setUserDescription(dto.getUserDescription());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        user.setCoverPath(dto.getCoverPath());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setPhone(dto.getPhone());
         user.setAddress(dto.getAddress());

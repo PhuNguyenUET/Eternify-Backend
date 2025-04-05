@@ -21,8 +21,6 @@ public class User {
     @Indexed(background = true)
     private String email;
 
-    @Indexed(background = true)
-    private String username;
     private String password;
     private String phone;
     private String role;
@@ -32,7 +30,6 @@ public class User {
     private String persistentAvatarId;
     private String userDescription;
     private String address;
-    private String coverPath;
 
     private UserPref userPref;
 

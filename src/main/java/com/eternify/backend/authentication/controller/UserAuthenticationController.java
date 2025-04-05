@@ -58,6 +58,18 @@ public class UserAuthenticationController {
         }
     }
 
+    @PostMapping("/artist_register")
+    public ResponseEntity<ApiResponse> artistRegister (@RequestHeader("X-auth-token") String token,
+                                                 @RequestBody UserRegisterDTO request) {
+        try {
+            Assert.isTrue(apiToken.equals(token), "Invalid token");
+            userService.artistRegister(request);
+            return ResponseEntity.ok(ApiResponse.success("Registration success"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
+        }
+    }
+
     @PostMapping("/refresh_jwt")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = String.class), mediaType = "application/json") }),

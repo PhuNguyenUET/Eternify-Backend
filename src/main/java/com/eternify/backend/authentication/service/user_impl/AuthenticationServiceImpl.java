@@ -39,12 +39,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletRequest httpServletRequest) {
         final int FAILURE_LIMIT = 15;
-        User user = userService.getUserByUsername(request.getUsername());
+        User user = userService.getUserByEmail(request.getEmail());
         if (user == null) {
-            throw new UserNotFoundException(request.getUsername());
+            throw new UserNotFoundException(request.getEmail());
         }
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         } catch (BadCredentialsException e) {
             user.setFailedAttempt(user.getFailedAttempt() + 1);
             if (user.getFailedAttempt() > FAILURE_LIMIT) {
@@ -60,8 +60,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (!user.isActive()) {
             throw lockedUserException;
         }
-        String jwt = JwtUtils.generateJwtToken(user.getUsername());
-        String refresh = JwtUtils.generateRefreshToken(user.getUsername());
+        String jwt = JwtUtils.generateJwtToken(user.getEmail());
+        String refresh = JwtUtils.generateRefreshToken(user.getEmail());
         return new AuthenticationResponse(jwt, refresh);
     }
 

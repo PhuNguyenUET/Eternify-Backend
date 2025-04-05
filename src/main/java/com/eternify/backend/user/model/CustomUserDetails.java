@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Setter
 public class CustomUserDetails implements UserDetails {
     private User user;
-    private String username;
+    private String email;
     private String password;
 
     private boolean enabled;
@@ -28,7 +28,7 @@ public class CustomUserDetails implements UserDetails {
 
     public CustomUserDetails(User user, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked) {
         this.user = user;
-        username = user.getUsername();
+        email = user.getEmail();
         password = user.getPassword();
         authorities = Arrays.stream(user.getRole().split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         this.enabled = enabled;
@@ -49,6 +49,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 }

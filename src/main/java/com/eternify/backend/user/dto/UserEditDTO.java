@@ -14,7 +14,6 @@ public class UserEditDTO {
     private String firstName;
     private String lastName;
     private String userDescription;
-    private String coverPath;
     private String persistentAvatarId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")

@@ -23,11 +23,13 @@ public interface UserService extends UserDetailsService {
 
     void register (UserRegisterDTO dto);
 
+    void artistRegister(UserRegisterDTO dto);
+
     void sendConfirmEmail();
 
     void confirmEmail(String token);
 
-    User getUserByUsername(String username);
+    User getUserByEmail(String email);
 
     List<User> findAll();
 
