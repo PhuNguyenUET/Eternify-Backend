@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
@@ -62,5 +64,10 @@ public class TagServiceImpl implements TagService {
         }
 
         return tag;
+    }
+
+    @Override
+    public List<Tag> getAllTags() {
+        return tagRepository.findAll();
     }
 }

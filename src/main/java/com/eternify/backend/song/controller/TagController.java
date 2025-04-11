@@ -74,4 +74,17 @@ public class TagController {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }
     }
+
+    @GetMapping("/get_all")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = com.eternify.backend.song.model.Tag.class), mediaType = "application/json") }),
+    })
+    public ResponseEntity<ApiResponse> getAllTags(@RequestHeader("X-auth-token") String token) {
+        try {
+            Assert.isTrue(apiToken.equals(token), "Invalid token");
+            return ResponseEntity.ok(ApiResponse.success("Get all tags success", tagService.getAllTags()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
+        }
+    }
 }

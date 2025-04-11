@@ -11,4 +11,5 @@ public interface CountryService {
     Country getCountryById(String id);
     Country getCountryByName(String name);
     void addFavouriteCountry(List<String> countryIds);
+    List<Country> getAllCountries();
 }

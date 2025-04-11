@@ -73,4 +73,9 @@ public class CategoryServiceImpl implements CategoryService {
             currentUser.getUserPref().getCategoryFrequency().put(categoryId, currentUser.getUserPref().getCategoryFrequency().getOrDefault(categoryId, 0) + 10);
         }
     }
+
+    @Override
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
+    }
 }

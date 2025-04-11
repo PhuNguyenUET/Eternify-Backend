@@ -73,4 +73,9 @@ public class CountryServiceImpl implements CountryService {
             currentUser.getUserPref().getCountryFrequency().put(countryId, currentUser.getUserPref().getCountryFrequency().getOrDefault(countryId, 0) + 10);
         }
     }
+
+    @Override
+    public List<Country> getAllCountries() {
+        return countryRepository.findAll();
+    }
 }

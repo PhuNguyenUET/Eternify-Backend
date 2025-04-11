@@ -10,4 +10,5 @@ public interface CategoryService {
     Category getCategoryById(String id);
     Category getCategoryByName(String name);
     void addFavouriteCategory(List<String> categoryIds);
+    List<Category> getAllCategories();
 }
