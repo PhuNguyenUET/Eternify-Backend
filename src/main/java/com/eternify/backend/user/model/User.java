@@ -31,10 +31,10 @@ public class User {
     private String userDescription;
     private String address;
 
-    private UserPref userPref;
+    private UserPref userPref = new UserPref();
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private Date dateOfBirth;
+    private Date dateOfBirth = new Date();
 
     private int failedAttempt;
 

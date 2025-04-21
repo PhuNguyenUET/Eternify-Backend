@@ -8,6 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class Song {
     private String categoryId;
     private String countryId;
     private int length;
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
     private String persistentCoverId;
     private String status;
 

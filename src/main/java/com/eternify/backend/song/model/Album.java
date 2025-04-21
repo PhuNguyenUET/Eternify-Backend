@@ -8,9 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Setter
 @Getter
@@ -25,15 +23,15 @@ public class Album {
     private String name;
     private String description;
     private String ownerId;
-    private List<String> songs;
-    private Map<String, Date> songAdditionTime;
+    private List<String> songs = new ArrayList<>();
+    private Map<String, Date> songAdditionTime = new HashMap<>();
     private String persistentCoverId;
     private String albumType;
     private String status;
 
-    private Map<String, Integer> categoryFrequency;
-    private Map<String, Integer> countryFrequency;
-    private Map<String, Integer> tagFrequency;
+    private Map<String, Integer> categoryFrequency = new HashMap<>();
+    private Map<String, Integer> countryFrequency = new HashMap<>();
+    private Map<String, Integer> tagFrequency = new HashMap<>();
 
     private String mainCategory = "";
     private String mainCountry = "";
