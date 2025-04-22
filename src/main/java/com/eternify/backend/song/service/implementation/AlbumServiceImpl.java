@@ -533,10 +533,12 @@ public class AlbumServiceImpl implements AlbumService {
         Set<AlbumDTO> rawRecommendations = new HashSet<>();
 
         rawRecommendations.addAll(searchByTag(topTags, AlbumType.NONE.toString(), 0));
-        rawRecommendations.addAll(searchByCategory(topCategories.get(0), AlbumType.NONE.toString(), 0));
-        rawRecommendations.addAll(searchByCategory(topCategories.get(1), AlbumType.NONE.toString(), 0));
-        rawRecommendations.addAll(searchByCountry(topCountries.get(0), AlbumType.NONE.toString(), 0));
-        rawRecommendations.addAll(searchByCountry(topCountries.get(1), AlbumType.NONE.toString(), 0));
+        for(String categoryId : topCategories) {
+            rawRecommendations.addAll(searchByCategory(categoryId, AlbumType.NONE.toString(), 0));
+        }
+        for(String countryId : topCountries) {
+            rawRecommendations.addAll(searchByCountry(countryId, AlbumType.NONE.toString(), 0));
+        }
 
         if(rawRecommendations.size() < 10) {
             rawRecommendations.addAll(searchByCategory(categoryRepository.findByName("Pop").getId(), AlbumType.NONE.toString(), 0));

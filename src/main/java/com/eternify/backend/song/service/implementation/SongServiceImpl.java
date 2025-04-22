@@ -270,9 +270,7 @@ public class SongServiceImpl implements SongService {
     }
 
     @Override
-    public List<SongDTO> searchByTag(List<String> tagNames, int limit) {
-        List<String> tagIds = tagNames.stream().map(tagName -> tagRepository.findByName(tagName).getId()).toList();
-
+    public List<SongDTO> searchByTag(List<String> tagIds, int limit) {
         if(tagIds.isEmpty()) {
             return new ArrayList<>();
         }
@@ -306,8 +304,9 @@ public class SongServiceImpl implements SongService {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        recommendationsRaw.addAll(searchByCategory(topCategories.get(0), 0));
-        recommendationsRaw.addAll(searchByCategory(topCategories.get(1), 0));
+        for (String categoryId : topCategories) {
+            recommendationsRaw.addAll(searchByCategory(categoryId, 0));
+        }
 
         List<String> topCountries = currentUser.getUserPref().getCountryFrequency().entrySet().stream()
                 .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
@@ -315,8 +314,9 @@ public class SongServiceImpl implements SongService {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        recommendationsRaw.addAll(searchByCountry(topCountries.get(0), 0));
-        recommendationsRaw.addAll(searchByCountry(topCountries.get(1), 0));
+        for(String countryId : topCountries) {
+            recommendationsRaw.addAll(searchByCountry(countryId, 0));
+        }
 
         if(recommendationsRaw.size() < 30) {
             recommendationsRaw.addAll(searchByCategory(categoryRepository.findByName("Pop").getId(), 0));
