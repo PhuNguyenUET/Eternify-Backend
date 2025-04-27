@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -203,6 +204,10 @@ public class AlbumServiceImpl implements AlbumService {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
+        if(album.getSongs().contains(songId)) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "Song already exists in the album");
+        }
+
         Song song = mongoTemplate.findById(songId, Song.class);
 
         if(song == null) {
@@ -248,6 +253,10 @@ public class AlbumServiceImpl implements AlbumService {
 
         if(!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
+        }
+
+        if(!album.getSongs().contains(songId)) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "Song doesn't exist in the album");
         }
 
         Song song = mongoTemplate.findById(songId, Song.class);
@@ -407,7 +416,7 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public List<AlbumDTO> searchByName(String prefix, String albumType, int limit) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("name").regex("^" + prefix));
+        query.addCriteria(Criteria.where("title").regex(".*" + Pattern.quote(prefix) + ".*", "i"));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
         if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));

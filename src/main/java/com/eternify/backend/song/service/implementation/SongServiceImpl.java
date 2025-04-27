@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -179,6 +180,7 @@ public class SongServiceImpl implements SongService {
 
         User currentUser = AuthenticationUtils.getCurrentUser();
 
+        currentUser.getUserPref().getFavoriteSongs().remove(songId);
         currentUser.getUserPref().getFavoriteSongs().add(songId);
 
         for(String tagId : song.getTags()) {
@@ -220,7 +222,7 @@ public class SongServiceImpl implements SongService {
     @Override
     public List<SongDTO> searchByName(String prefix, int limit) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("title").regex("^" + prefix));
+        query.addCriteria(Criteria.where("title").regex(".*" + Pattern.quote(prefix) + ".*", "i"));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
         if(limit <= 0) {
@@ -392,6 +394,8 @@ public class SongServiceImpl implements SongService {
 
         User currentUser = AuthenticationUtils.getCurrentUser();
 
+        List<String> history = currentUser.getUserPref().getSongHistory();
+        history.remove(songId);
         currentUser.getUserPref().getSongHistory().add(songId);
 
         for(String tagId : song.getTags()) {
