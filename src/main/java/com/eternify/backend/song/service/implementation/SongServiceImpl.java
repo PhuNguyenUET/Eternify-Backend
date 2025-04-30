@@ -338,7 +338,6 @@ public class SongServiceImpl implements SongService {
         User currentUser = AuthenticationUtils.getCurrentUser();
 
         List<String> songIds = new ArrayList<>(currentUser.getUserPref().getSongHistory());
-        Collections.shuffle(songIds);
 
         if(limit <= 0) {
             return songIds.stream().map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();

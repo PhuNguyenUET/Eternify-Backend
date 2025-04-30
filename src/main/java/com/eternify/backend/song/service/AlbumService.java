@@ -13,6 +13,7 @@ public interface AlbumService {
     void cloneAlbum(String id);
 
     void addSongToAlbum(AddRemoveSongDTO addRemoveSongDTO);
+    void addSongBatchToAlbum(List<AddRemoveSongDTO> addRemoveSongDTOS);
     void removeSongFromAlbum(AddRemoveSongDTO addRemoveSongDTO);
     void changeSongOrder(ChangeOrderSongDTO changeOrderSongDTO);
 

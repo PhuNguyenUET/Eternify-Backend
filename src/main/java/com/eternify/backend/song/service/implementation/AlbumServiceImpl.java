@@ -98,6 +98,8 @@ public class AlbumServiceImpl implements AlbumService {
             album.setAlbumType(AlbumType.PLAYLIST.toString());
         }
 
+        addSongBatchToAlbum(albumAddDTO.getSongs());
+
         mongoTemplate.save(album);
     }
 
@@ -238,6 +240,13 @@ public class AlbumServiceImpl implements AlbumService {
         }
 
         mongoTemplate.save(album);
+    }
+
+    @Override
+    public void addSongBatchToAlbum(List<AddRemoveSongDTO> addRemoveSongDTOS) {
+        for(AddRemoveSongDTO dto : addRemoveSongDTOS) {
+            addSongToAlbum(dto);
+        }
     }
 
     @Override

@@ -101,6 +101,18 @@ public class AlbumController {
         }
     }
 
+    @PutMapping("/add_song_batch")
+    public ResponseEntity<ApiResponse> addSongBatchToAlbum(@RequestHeader("X-auth-token") String token,
+                                                      @RequestBody List<AddRemoveSongDTO> dtos) {
+        try {
+            Assert.isTrue(apiToken.equals(token), "Invalid token");
+            albumService.addSongBatchToAlbum(dtos);
+            return ResponseEntity.ok(ApiResponse.success("Add song batch success"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
+        }
+    }
+
     @PutMapping("/remove_song")
     public ResponseEntity<ApiResponse> removeSongFromAlbum(@RequestHeader("X-auth-token") String token,
                                                       @RequestBody AddRemoveSongDTO dto) {

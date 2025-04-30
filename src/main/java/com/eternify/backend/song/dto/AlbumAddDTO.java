@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,4 +17,5 @@ public class AlbumAddDTO {
     private String persistentCoverId;
     private String status;
     private String albumType;
+    private List<AddRemoveSongDTO> songs;
 }
