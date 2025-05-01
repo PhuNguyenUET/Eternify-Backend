@@ -17,5 +17,5 @@ public class AlbumAddDTO {
     private String persistentCoverId;
     private String status;
     private String albumType;
-    private List<AddRemoveSongDTO> songs;
+    private List<String> songs;
 }

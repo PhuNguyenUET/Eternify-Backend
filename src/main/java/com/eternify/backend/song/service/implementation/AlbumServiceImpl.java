@@ -40,7 +40,7 @@ public class AlbumServiceImpl implements AlbumService {
     private void setupModelMapper() {
         modelMapper = new ModelMapper();
 
-        modelMapper.createTypeMap(Album.class, AlbumDTO.class).setConverter( context -> {
+        modelMapper.createTypeMap(Album.class, AlbumDTO.class).setConverter(context -> {
             Album album = context.getSource();
 
             AlbumDTO albumDTO = AlbumDTO.builder()
@@ -58,7 +58,7 @@ public class AlbumServiceImpl implements AlbumService {
             List<Song> songs = album.getSongs().stream().map(songId -> mongoTemplate.findById(songId, Song.class)).toList();
 
             List<SongAlbumDTO> songAlbumDTOs = songs.stream().map(song -> {
-                if(song == null) {
+                if (song == null) {
                     return null;
                 }
 
@@ -92,18 +92,16 @@ public class AlbumServiceImpl implements AlbumService {
                 .status(albumAddDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString())
                 .build();
 
-        if(AuthenticationUtils.getCurrentUser().getRole().equals(Role.ARTIST.toString())) {
+        if (AuthenticationUtils.getCurrentUser().getRole().equals(Role.ARTIST.toString())) {
             album.setAlbumType(albumAddDTO.getAlbumType().equals(AlbumType.ARTIST_ALBUM.toString()) ? AlbumType.ARTIST_ALBUM.toString() : AlbumType.PLAYLIST.toString());
         } else {
             album.setAlbumType(AlbumType.PLAYLIST.toString());
         }
 
-        for(AddRemoveSongDTO dto : albumAddDTO.getSongs()) {
-            String songId = dto.getSongId();
-
+        for (String songId : albumAddDTO.getSongs()) {
             Song song = mongoTemplate.findById(songId, Song.class);
 
-            if(song == null) {
+            if (song == null) {
                 throw new BusinessException(HttpStatus.NOT_FOUND, "Song doesn't exist");
             }
 
@@ -112,20 +110,20 @@ public class AlbumServiceImpl implements AlbumService {
 
             album.getCategoryFrequency().put(song.getCategoryId(), album.getCategoryFrequency().getOrDefault(song.getCategoryId(), 0) + 1);
 
-            if(album.getCategoryFrequency().get(song.getCategoryId()) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
+            if (album.getCategoryFrequency().get(song.getCategoryId()) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
                 album.setMainCategory(song.getCategoryId());
             }
 
             album.getCountryFrequency().put(song.getCountryId(), album.getCountryFrequency().getOrDefault(song.getCountryId(), 0) + 1);
 
-            if(album.getCountryFrequency().get(song.getCountryId()) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
+            if (album.getCountryFrequency().get(song.getCountryId()) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
                 album.setMainCountry(song.getCountryId());
             }
 
-            for(String tagId : song.getTags()) {
+            for (String tagId : song.getTags()) {
                 album.getTagFrequency().put(tagId, album.getTagFrequency().getOrDefault(tagId, 0) + 1);
 
-                if(album.getTagFrequency().get(tagId) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
+                if (album.getTagFrequency().get(tagId) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
                     album.setMainTag(tagId);
                 }
             }
@@ -138,11 +136,11 @@ public class AlbumServiceImpl implements AlbumService {
     public void deleteAlbum(String albumId) {
         Album album = mongoTemplate.findById(albumId, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
@@ -153,11 +151,11 @@ public class AlbumServiceImpl implements AlbumService {
     public void updateAlbum(AlbumEditDTO albumEditDTO) {
         Album album = mongoTemplate.findById(albumEditDTO.getId(), Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
@@ -166,7 +164,7 @@ public class AlbumServiceImpl implements AlbumService {
         album.setPersistentCoverId(albumEditDTO.getPersistentCoverId());
         album.setStatus(albumEditDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString());
 
-        if(AuthenticationUtils.getCurrentUser().getRole().equals(Role.ARTIST.toString())) {
+        if (AuthenticationUtils.getCurrentUser().getRole().equals(Role.ARTIST.toString())) {
             album.setAlbumType(albumEditDTO.getAlbumType().equals(AlbumType.ARTIST_ALBUM.toString()) ? AlbumType.ARTIST_ALBUM.toString() : AlbumType.PLAYLIST.toString());
         } else {
             album.setAlbumType(AlbumType.PLAYLIST.toString());
@@ -179,11 +177,11 @@ public class AlbumServiceImpl implements AlbumService {
     public AlbumDTO getAlbum(String albumId) {
         Album album = mongoTemplate.findById(albumId, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(album.getStatus().equals(Status.PRIVATE.toString()) && !album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (album.getStatus().equals(Status.PRIVATE.toString()) && !album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this private album");
         }
 
@@ -194,11 +192,11 @@ public class AlbumServiceImpl implements AlbumService {
     public void cloneAlbum(String id) {
         Album album = mongoTemplate.findById(id, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(album.getStatus().equals(Status.PRIVATE.toString()) && !album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (album.getStatus().equals(Status.PRIVATE.toString()) && !album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this private album");
         }
 
@@ -229,21 +227,21 @@ public class AlbumServiceImpl implements AlbumService {
 
         Album album = mongoTemplate.findById(albumId, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
-        if(album.getSongs().contains(songId)) {
+        if (album.getSongs().contains(songId)) {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "Song already exists in the album");
         }
 
         Song song = mongoTemplate.findById(songId, Song.class);
 
-        if(song == null) {
+        if (song == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Song doesn't exist");
         }
 
@@ -252,20 +250,20 @@ public class AlbumServiceImpl implements AlbumService {
 
         album.getCategoryFrequency().put(song.getCategoryId(), album.getCategoryFrequency().getOrDefault(song.getCategoryId(), 0) + 1);
 
-        if(album.getCategoryFrequency().get(song.getCategoryId()) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
+        if (album.getCategoryFrequency().get(song.getCategoryId()) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
             album.setMainCategory(song.getCategoryId());
         }
 
         album.getCountryFrequency().put(song.getCountryId(), album.getCountryFrequency().getOrDefault(song.getCountryId(), 0) + 1);
 
-        if(album.getCountryFrequency().get(song.getCountryId()) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
+        if (album.getCountryFrequency().get(song.getCountryId()) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
             album.setMainCountry(song.getCountryId());
         }
 
-        for(String tagId : song.getTags()) {
+        for (String tagId : song.getTags()) {
             album.getTagFrequency().put(tagId, album.getTagFrequency().getOrDefault(tagId, 0) + 1);
 
-            if(album.getTagFrequency().get(tagId) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
+            if (album.getTagFrequency().get(tagId) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
                 album.setMainTag(tagId);
             }
         }
@@ -274,10 +272,138 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public void addSongBatchToAlbum(List<AddRemoveSongDTO> addRemoveSongDTOS) {
-        for(AddRemoveSongDTO dto : addRemoveSongDTOS) {
-            addSongToAlbum(dto);
+    public void addSongBatchToAlbum(AddRemoveSongBatchDTO dto) {
+        String albumId = dto.getAlbumId();
+        List<String> songs = dto.getSongs();
+
+        Album album = mongoTemplate.findById(albumId, Album.class);
+
+        if (album == null) {
+            throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
+
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+            throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
+        }
+        for (String songId : songs) {
+            if (album.getSongs().contains(songId)) {
+                throw new BusinessException(HttpStatus.BAD_REQUEST, "Song already exists in the album");
+            }
+
+            Song song = mongoTemplate.findById(songId, Song.class);
+
+            if (song == null) {
+                throw new BusinessException(HttpStatus.NOT_FOUND, "Song doesn't exist");
+            }
+
+            album.getSongs().add(songId);
+            album.getSongAdditionTime().put(songId, new Date());
+
+            album.getCategoryFrequency().put(song.getCategoryId(), album.getCategoryFrequency().getOrDefault(song.getCategoryId(), 0) + 1);
+
+            if (album.getCategoryFrequency().get(song.getCategoryId()) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
+                album.setMainCategory(song.getCategoryId());
+            }
+
+            album.getCountryFrequency().put(song.getCountryId(), album.getCountryFrequency().getOrDefault(song.getCountryId(), 0) + 1);
+
+            if (album.getCountryFrequency().get(song.getCountryId()) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
+                album.setMainCountry(song.getCountryId());
+            }
+
+            for (String tagId : song.getTags()) {
+                album.getTagFrequency().put(tagId, album.getTagFrequency().getOrDefault(tagId, 0) + 1);
+
+                if (album.getTagFrequency().get(tagId) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
+                    album.setMainTag(tagId);
+                }
+            }
+        }
+
+        mongoTemplate.save(album);
+    }
+
+    @Override
+    public void removeSongBatchFromAlbum(AddRemoveSongBatchDTO dto) {
+        String albumId = dto.getAlbumId();
+        List<String> songs = dto.getSongs();
+
+        Album album = mongoTemplate.findById(albumId, Album.class);
+
+        if (album == null) {
+            throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
+        }
+
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+            throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
+        }
+
+        for (String songId : songs) {
+            if (!album.getSongs().contains(songId)) {
+                throw new BusinessException(HttpStatus.BAD_REQUEST, "Song doesn't exist in the album");
+            }
+
+            Song song = mongoTemplate.findById(songId, Song.class);
+
+            if (song == null) {
+                throw new BusinessException(HttpStatus.NOT_FOUND, "Song doesn't exist");
+            }
+
+            album.getSongs().remove(songId);
+            album.getSongAdditionTime().remove(songId);
+
+            album.getCategoryFrequency().put(song.getCategoryId(), album.getCategoryFrequency().get(song.getCategoryId()) - 1);
+
+            if (album.getCategoryFrequency().get(song.getCategoryId()) == 0) {
+                album.getCategoryFrequency().remove(song.getCategoryId());
+            }
+
+            if (song.getCategoryId().equals(album.getMainCategory())) {
+                album.setMainCategory("");
+
+                for (String categoryId : album.getCategoryFrequency().keySet()) {
+                    if (album.getCategoryFrequency().get(categoryId) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
+                        album.setMainCategory(categoryId);
+                    }
+                }
+            }
+
+            album.getCountryFrequency().put(song.getCountryId(), album.getCountryFrequency().get(song.getCountryId()) - 1);
+
+            if (album.getCountryFrequency().get(song.getCountryId()) == 0) {
+                album.getCountryFrequency().remove(song.getCountryId());
+            }
+
+            if (song.getCountryId().equals(album.getMainCountry())) {
+                album.setMainCountry("");
+
+                for (String countryId : album.getCountryFrequency().keySet()) {
+                    if (album.getCountryFrequency().get(countryId) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
+                        album.setMainCountry(countryId);
+                    }
+                }
+            }
+
+            for (String tagId : song.getTags()) {
+                album.getTagFrequency().put(tagId, album.getTagFrequency().get(tagId) - 1);
+
+                if (album.getTagFrequency().get(tagId) == 0) {
+                    album.getTagFrequency().remove(tagId);
+                }
+
+                if (tagId.equals(album.getMainTag())) {
+                    album.setMainTag("");
+
+                    for (String tagIdEntry : album.getTagFrequency().keySet()) {
+                        if (album.getTagFrequency().get(tagIdEntry) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
+                            album.setMainTag(tagIdEntry);
+                        }
+                    }
+                }
+            }
+        }
+
+        mongoTemplate.save(album);
     }
 
     @Override
@@ -287,21 +413,21 @@ public class AlbumServiceImpl implements AlbumService {
 
         Album album = mongoTemplate.findById(albumId, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
-        if(!album.getSongs().contains(songId)) {
+        if (!album.getSongs().contains(songId)) {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "Song doesn't exist in the album");
         }
 
         Song song = mongoTemplate.findById(songId, Song.class);
 
-        if(song == null) {
+        if (song == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Song doesn't exist");
         }
 
@@ -310,15 +436,15 @@ public class AlbumServiceImpl implements AlbumService {
 
         album.getCategoryFrequency().put(song.getCategoryId(), album.getCategoryFrequency().get(song.getCategoryId()) - 1);
 
-        if(album.getCategoryFrequency().get(song.getCategoryId()) == 0) {
+        if (album.getCategoryFrequency().get(song.getCategoryId()) == 0) {
             album.getCategoryFrequency().remove(song.getCategoryId());
         }
 
-        if(song.getCategoryId().equals(album.getMainCategory())) {
+        if (song.getCategoryId().equals(album.getMainCategory())) {
             album.setMainCategory("");
 
-            for(String categoryId : album.getCategoryFrequency().keySet()) {
-                if(album.getCategoryFrequency().get(categoryId) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
+            for (String categoryId : album.getCategoryFrequency().keySet()) {
+                if (album.getCategoryFrequency().get(categoryId) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
                     album.setMainCategory(categoryId);
                 }
             }
@@ -326,32 +452,32 @@ public class AlbumServiceImpl implements AlbumService {
 
         album.getCountryFrequency().put(song.getCountryId(), album.getCountryFrequency().get(song.getCountryId()) - 1);
 
-        if(album.getCountryFrequency().get(song.getCountryId()) == 0) {
+        if (album.getCountryFrequency().get(song.getCountryId()) == 0) {
             album.getCountryFrequency().remove(song.getCountryId());
         }
 
-        if(song.getCountryId().equals(album.getMainCountry())) {
+        if (song.getCountryId().equals(album.getMainCountry())) {
             album.setMainCountry("");
 
-            for(String countryId : album.getCountryFrequency().keySet()) {
-                if(album.getCountryFrequency().get(countryId) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
+            for (String countryId : album.getCountryFrequency().keySet()) {
+                if (album.getCountryFrequency().get(countryId) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
                     album.setMainCountry(countryId);
                 }
             }
         }
 
-        for(String tagId : song.getTags()) {
+        for (String tagId : song.getTags()) {
             album.getTagFrequency().put(tagId, album.getTagFrequency().get(tagId) - 1);
 
-            if(album.getTagFrequency().get(tagId) == 0) {
+            if (album.getTagFrequency().get(tagId) == 0) {
                 album.getTagFrequency().remove(tagId);
             }
 
-            if(tagId.equals(album.getMainTag())) {
+            if (tagId.equals(album.getMainTag())) {
                 album.setMainTag("");
 
-                for(String tagIdEntry : album.getTagFrequency().keySet()) {
-                    if(album.getTagFrequency().get(tagIdEntry) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
+                for (String tagIdEntry : album.getTagFrequency().keySet()) {
+                    if (album.getTagFrequency().get(tagIdEntry) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
                         album.setMainTag(tagIdEntry);
                     }
                 }
@@ -365,19 +491,19 @@ public class AlbumServiceImpl implements AlbumService {
     public void changeSongOrder(ChangeOrderSongDTO changeOrderSongDTO) {
         Album album = mongoTemplate.findById(changeOrderSongDTO.getAlbumId(), Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
-        if(!album.getSongs().contains(changeOrderSongDTO.getSongId())) {
+        if (!album.getSongs().contains(changeOrderSongDTO.getSongId())) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Song doesn't exist in the album");
         }
 
-        if(changeOrderSongDTO.getOrder() < 0 || changeOrderSongDTO.getOrder() >= album.getSongs().size()) {
+        if (changeOrderSongDTO.getOrder() < 0 || changeOrderSongDTO.getOrder() >= album.getSongs().size()) {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "Invalid order");
         }
 
@@ -391,11 +517,11 @@ public class AlbumServiceImpl implements AlbumService {
     public void openAlbum(String id) {
         Album album = mongoTemplate.findById(id, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
@@ -408,11 +534,11 @@ public class AlbumServiceImpl implements AlbumService {
     public void closeAlbum(String id) {
         Album album = mongoTemplate.findById(id, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
-        if(!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
+        if (!album.getOwnerId().equals(AuthenticationUtils.getCurrentUser().getId())) {
             throw new BusinessException(HttpStatus.FORBIDDEN, "You are not the owner of this album");
         }
 
@@ -425,13 +551,13 @@ public class AlbumServiceImpl implements AlbumService {
     public void favoriteAlbum(String id) {
         Album album = mongoTemplate.findById(id, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
         User currentUser = AuthenticationUtils.getCurrentUser();
 
-        if(!currentUser.getUserPref().getFavoriteAlbums().contains(id)) {
+        if (!currentUser.getUserPref().getFavoriteAlbums().contains(id)) {
             currentUser.getUserPref().getFavoriteAlbums().add(id);
         }
 
@@ -442,7 +568,7 @@ public class AlbumServiceImpl implements AlbumService {
     public void unfavoriteAlbum(String id) {
         Album album = mongoTemplate.findById(id, Album.class);
 
-        if(album == null) {
+        if (album == null) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "Album doesn't exist");
         }
 
@@ -458,15 +584,15 @@ public class AlbumServiceImpl implements AlbumService {
         Query query = new Query();
         query.addCriteria(Criteria.where("title").regex(".*" + Pattern.quote(prefix) + ".*", "i"));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
-        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+        if (albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
-        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+        } else if (albumType.equals(AlbumType.PLAYLIST.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
         } else {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        if(limit <= 0) {
+        if (limit <= 0) {
             return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
         } else {
             return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
@@ -479,15 +605,15 @@ public class AlbumServiceImpl implements AlbumService {
         query.addCriteria(Criteria.where("ownerId").is(artistId));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
-        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+        if (albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
-        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+        } else if (albumType.equals(AlbumType.PLAYLIST.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
         } else {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        if(limit <= 0) {
+        if (limit <= 0) {
             return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
         } else {
             return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
@@ -500,15 +626,15 @@ public class AlbumServiceImpl implements AlbumService {
         query.addCriteria(Criteria.where("mainCategory").is(categoryId));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
-        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+        if (albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
-        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+        } else if (albumType.equals(AlbumType.PLAYLIST.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
         } else {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        if(limit <= 0) {
+        if (limit <= 0) {
             return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
         } else {
             return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
@@ -521,15 +647,15 @@ public class AlbumServiceImpl implements AlbumService {
         query.addCriteria(Criteria.where("mainCountry").is(countryId));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
-        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+        if (albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
-        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+        } else if (albumType.equals(AlbumType.PLAYLIST.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
         } else {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        if(limit <= 0) {
+        if (limit <= 0) {
             return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
         } else {
             return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
@@ -542,15 +668,15 @@ public class AlbumServiceImpl implements AlbumService {
         query.addCriteria(Criteria.where("mainTag").in(tags));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
 
-        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+        if (albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
-        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+        } else if (albumType.equals(AlbumType.PLAYLIST.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString()));
         } else {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()).orOperator(Criteria.where("albumType").is(AlbumType.PLAYLIST.toString())));
         }
 
-        if(limit <= 0) {
+        if (limit <= 0) {
             return mongoTemplate.find(query, Album.class).stream().map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
         } else {
             return mongoTemplate.find(query, Album.class).stream().limit(limit).map(album -> modelMapper.map(album, AlbumDTO.class)).toList();
@@ -582,20 +708,20 @@ public class AlbumServiceImpl implements AlbumService {
         Set<AlbumDTO> rawRecommendations = new HashSet<>();
 
         rawRecommendations.addAll(searchByTag(topTags, AlbumType.NONE.toString(), 0));
-        for(String categoryId : topCategories) {
+        for (String categoryId : topCategories) {
             rawRecommendations.addAll(searchByCategory(categoryId, AlbumType.NONE.toString(), 0));
         }
-        for(String countryId : topCountries) {
+        for (String countryId : topCountries) {
             rawRecommendations.addAll(searchByCountry(countryId, AlbumType.NONE.toString(), 0));
         }
 
-        if(rawRecommendations.size() < 10) {
+        if (rawRecommendations.size() < 10) {
             rawRecommendations.addAll(searchByCategory(categoryRepository.findByName("Pop").getId(), AlbumType.NONE.toString(), 0));
         }
 
         rawRecommendations.removeIf(albumDTO -> albumDTO.getStatus().equals(Status.PRIVATE.toString()));
 
-        if(limit <= 0) {
+        if (limit <= 0) {
             return rawRecommendations.stream().toList();
         } else {
             return rawRecommendations.stream().limit(limit).toList();
