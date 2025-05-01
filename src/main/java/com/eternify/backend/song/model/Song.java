@@ -28,6 +28,7 @@ public class Song {
     private String categoryId;
     private String countryId;
     private int length;
+    @Builder.Default
     private List<String> tags = new ArrayList<>();
     private String persistentCoverId;
     private String status;

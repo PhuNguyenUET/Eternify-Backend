@@ -92,6 +92,8 @@ public class AlbumServiceImpl implements AlbumService {
                 .status(albumAddDTO.getStatus().equals(Status.PUBLIC.toString()) ? Status.PUBLIC.toString() : Status.PRIVATE.toString())
                 .build();
 
+        album = mongoTemplate.save(album);
+
         if (AuthenticationUtils.getCurrentUser().getRole().equals(Role.ARTIST.toString())) {
             album.setAlbumType(albumAddDTO.getAlbumType().equals(AlbumType.ARTIST_ALBUM.toString()) ? AlbumType.ARTIST_ALBUM.toString() : AlbumType.PLAYLIST.toString());
         } else {

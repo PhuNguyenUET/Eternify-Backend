@@ -33,7 +33,7 @@ public class AlbumController {
         try {
             Assert.isTrue(apiToken.equals(token), "Invalid token");
             albumService.createAlbum(albumAddDTO);
-            return ResponseEntity.ok(ApiResponse.success("Add song success"));
+            return ResponseEntity.ok(ApiResponse.success("Create album success"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
         }

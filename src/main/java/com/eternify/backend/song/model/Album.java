@@ -23,14 +23,19 @@ public class Album {
     private String name;
     private String description;
     private String ownerId;
+    @Builder.Default
     private List<String> songs = new ArrayList<>();
+    @Builder.Default
     private Map<String, Date> songAdditionTime = new HashMap<>();
     private String persistentCoverId;
     private String albumType;
     private String status;
 
+    @Builder.Default
     private Map<String, Integer> categoryFrequency = new HashMap<>();
+    @Builder.Default
     private Map<String, Integer> countryFrequency = new HashMap<>();
+    @Builder.Default
     private Map<String, Integer> tagFrequency = new HashMap<>();
 
     private String mainCategory = "";
