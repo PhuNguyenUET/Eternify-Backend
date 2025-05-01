@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(of = "id")
 @AllArgsConstructor
 @NoArgsConstructor
 public class SongDTO {

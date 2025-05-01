@@ -98,7 +98,38 @@ public class AlbumServiceImpl implements AlbumService {
             album.setAlbumType(AlbumType.PLAYLIST.toString());
         }
 
-        addSongBatchToAlbum(albumAddDTO.getSongs());
+        for(AddRemoveSongDTO dto : albumAddDTO.getSongs()) {
+            String songId = dto.getSongId();
+
+            Song song = mongoTemplate.findById(songId, Song.class);
+
+            if(song == null) {
+                throw new BusinessException(HttpStatus.NOT_FOUND, "Song doesn't exist");
+            }
+
+            album.getSongs().add(songId);
+            album.getSongAdditionTime().put(songId, new Date());
+
+            album.getCategoryFrequency().put(song.getCategoryId(), album.getCategoryFrequency().getOrDefault(song.getCategoryId(), 0) + 1);
+
+            if(album.getCategoryFrequency().get(song.getCategoryId()) > album.getCategoryFrequency().getOrDefault(album.getMainCategory(), 0)) {
+                album.setMainCategory(song.getCategoryId());
+            }
+
+            album.getCountryFrequency().put(song.getCountryId(), album.getCountryFrequency().getOrDefault(song.getCountryId(), 0) + 1);
+
+            if(album.getCountryFrequency().get(song.getCountryId()) > album.getCountryFrequency().getOrDefault(album.getMainCountry(), 0)) {
+                album.setMainCountry(song.getCountryId());
+            }
+
+            for(String tagId : song.getTags()) {
+                album.getTagFrequency().put(tagId, album.getTagFrequency().getOrDefault(tagId, 0) + 1);
+
+                if(album.getTagFrequency().get(tagId) > album.getTagFrequency().getOrDefault(album.getMainTag(), 0)) {
+                    album.setMainTag(tagId);
+                }
+            }
+        }
 
         mongoTemplate.save(album);
     }
