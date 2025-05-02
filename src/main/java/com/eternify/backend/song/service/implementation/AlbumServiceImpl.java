@@ -567,6 +567,17 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
+    public List<AlbumDTO> getFavorites(int limit) {
+        User currentUser = AuthenticationUtils.getCurrentUser();
+
+        if(limit <= 0) {
+            return currentUser.getUserPref().getFavoriteAlbums().stream().map(albumId -> modelMapper.map(mongoTemplate.findById(albumId, Album.class), AlbumDTO.class)).toList();
+        } else {
+            return currentUser.getUserPref().getFavoriteAlbums().stream().limit(limit).map(albumId -> modelMapper.map(mongoTemplate.findById(albumId, Album.class), AlbumDTO.class)).toList();
+        }
+    }
+
+    @Override
     public void unfavoriteAlbum(String id) {
         Album album = mongoTemplate.findById(id, Album.class);
 

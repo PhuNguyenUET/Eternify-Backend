@@ -197,6 +197,20 @@ public class AlbumController {
         }
     }
 
+    @GetMapping("/get_user_favorites")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = AlbumDTO.class), mediaType = "application/json") }),
+    })
+    public ResponseEntity<ApiResponse> getUserFavorites(@RequestHeader("X-auth-token") String token,
+                                                        @RequestParam(defaultValue = "0") int limit) {
+        try {
+            Assert.isTrue(apiToken.equals(token), "Invalid token");
+            return ResponseEntity.ok(ApiResponse.success("Get user favorites success", albumService.getFavorites(limit)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(HttpServletResponse.SC_BAD_REQUEST, e.getMessage()));
+        }
+    }
+
     @GetMapping("/search_by_name")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = AlbumDTO.class), mediaType = "application/json") }),
