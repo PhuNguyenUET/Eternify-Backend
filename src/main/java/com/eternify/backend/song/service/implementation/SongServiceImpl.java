@@ -339,11 +339,17 @@ public class SongServiceImpl implements SongService {
 
         List<String> songIds = new ArrayList<>(currentUser.getUserPref().getSongHistory());
 
+        List<SongDTO> returnList;
         if(limit <= 0) {
-            return songIds.stream().map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
+            returnList = songIds.stream().map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
         } else {
-            return songIds.stream().limit(limit).map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
+            returnList = songIds.stream().limit(limit).map(songId -> modelMapper.map(mongoTemplate.findById(songId, Song.class), SongDTO.class)).toList();
         }
+
+        List<SongDTO> mutableList = new ArrayList<>(returnList);
+        Collections.reverse(mutableList);
+
+        return  mutableList;
     }
 
     @Override

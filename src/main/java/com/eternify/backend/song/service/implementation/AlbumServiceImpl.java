@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -567,13 +568,20 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public List<AlbumDTO> getFavorites(int limit) {
+    public List<AlbumDTO> getFavorites(String albumType, int limit) {
         User currentUser = AuthenticationUtils.getCurrentUser();
 
+        List<AlbumDTO> allAlbums = currentUser.getUserPref().getFavoriteAlbums().stream().map(albumId -> modelMapper.map(mongoTemplate.findById(albumId, Album.class), AlbumDTO.class)).toList();
+
+        if(albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
+            allAlbums = allAlbums.stream().filter(album -> album.getAlbumType().equals(AlbumType.ARTIST_ALBUM.toString())).toList();
+        } else if(albumType.equals(AlbumType.PLAYLIST.toString())) {
+            allAlbums = allAlbums.stream().filter(album -> album.getAlbumType().equals(AlbumType.PLAYLIST.toString())).toList();
+        }
         if(limit <= 0) {
-            return currentUser.getUserPref().getFavoriteAlbums().stream().map(albumId -> modelMapper.map(mongoTemplate.findById(albumId, Album.class), AlbumDTO.class)).toList();
+            return allAlbums;
         } else {
-            return currentUser.getUserPref().getFavoriteAlbums().stream().limit(limit).map(albumId -> modelMapper.map(mongoTemplate.findById(albumId, Album.class), AlbumDTO.class)).toList();
+            return allAlbums.stream().limit(limit).collect(Collectors.toList());
         }
     }
 

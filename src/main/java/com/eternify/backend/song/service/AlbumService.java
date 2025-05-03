@@ -24,7 +24,7 @@ public interface AlbumService {
     void favoriteAlbum(String id);
     void unfavoriteAlbum(String id);
 
-    List<AlbumDTO> getFavorites(int limit);
+    List<AlbumDTO> getFavorites(String albumType, int limit);
 
     List<AlbumDTO> searchByName(String prefix, String albumType, int limit);
     List<AlbumDTO> searchByArtist(String artistId, String albumType, int limit);
