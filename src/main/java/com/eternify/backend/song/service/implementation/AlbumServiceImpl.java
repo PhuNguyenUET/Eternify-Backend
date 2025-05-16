@@ -603,7 +603,7 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public List<AlbumDTO> searchByName(String prefix, String albumType, int limit) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("title").regex(".*" + Pattern.quote(prefix) + ".*", "i"));
+        query.addCriteria(Criteria.where("name").regex(".*" + Pattern.quote(prefix) + ".*", "i"));
         query.addCriteria(Criteria.where("status").is(Status.PUBLIC.toString()));
         if (albumType.equals(AlbumType.ARTIST_ALBUM.toString())) {
             query.addCriteria(Criteria.where("albumType").is(AlbumType.ARTIST_ALBUM.toString()));
