@@ -78,6 +78,8 @@ public class AlbumServiceImpl implements AlbumService {
                         .build();
             }).toList();
 
+            songAlbumDTOs = songAlbumDTOs.stream().filter(Objects::nonNull).toList();
+
             albumDTO.setSongs(songAlbumDTOs);
             return albumDTO;
         });
